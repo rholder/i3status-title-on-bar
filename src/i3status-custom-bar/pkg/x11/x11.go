@@ -11,8 +11,8 @@ import (
 )
 
 type X11 struct {
-	XConnection *xgb.Conn
-	RootWindow xproto.Window
+	XConnection      *xgb.Conn
+	RootWindow       xproto.Window
 	ActiveWindowAtom xproto.Atom
 
 	// this is the canonical window title atom, always the real title
@@ -23,24 +23,24 @@ type X11 struct {
 	WindowName3Atom xproto.Atom
 }
 
-func New() (X11) {
+func New() X11 {
 	xConnection, err := xgb.NewConn()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return X11 {
-		XConnection: xConnection,
-		RootWindow: xproto.Setup(xConnection).DefaultScreen(xConnection).Root,
+	return X11{
+		XConnection:      xConnection,
+		RootWindow:       xproto.Setup(xConnection).DefaultScreen(xConnection).Root,
 		ActiveWindowAtom: fetchAtom(xConnection, "_NET_ACTIVE_WINDOW"),
-		WindowNameAtom: fetchAtom(xConnection, "_NET_WM_NAME"),
-		WindowName2Atom: fetchAtom(xConnection, "WM_NAME"),
-		WindowName3Atom: fetchAtom(xConnection, "_WM_NAME"),
+		WindowNameAtom:   fetchAtom(xConnection, "_NET_WM_NAME"),
+		WindowName2Atom:  fetchAtom(xConnection, "WM_NAME"),
+		WindowName3Atom:  fetchAtom(xConnection, "_WM_NAME"),
 	}
 }
 
-func (x11 X11) ActiveWindowTitle() (string) {
-    // Get the actual value of _NET_ACTIVE_WINDOW.
+func (x11 X11) ActiveWindowTitle() string {
+	// Get the actual value of _NET_ACTIVE_WINDOW.
 	reply, err := xproto.GetProperty(x11.XConnection, false, x11.RootWindow, x11.ActiveWindowAtom,
 		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 	if err != nil {
@@ -59,7 +59,7 @@ func (x11 X11) ActiveWindowTitle() (string) {
 	return string(reply.Value)
 }
 
-func (x11 X11) BeginTitleChangeDetection(stderr io.Writer, onChange func()) (error) {
+func (x11 X11) BeginTitleChangeDetection(stderr io.Writer, onChange func()) error {
 	// subscribe to events from the root window
 	xproto.ChangeWindowAttributes(x11.XConnection, x11.RootWindow,
 		xproto.CwEventMask,
