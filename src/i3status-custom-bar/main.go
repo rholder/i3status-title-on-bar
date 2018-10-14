@@ -13,38 +13,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/BurntSushi/xgb"
-	"github.com/BurntSushi/xgb/xproto"
+	"i3status-custom-bar/pkg/window"
+	"i3status-custom-bar/pkg/x11"
 )
-
-func fetchAtom(c *xgb.Conn, name string) xproto.Atom {
-	// Get the atom id (i.e., intern an atom) of "name".
-	cookie, err := xproto.InternAtom(c, true, uint16(len(name)), name).Reply()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return cookie.Atom
-}
-
-func fetchActiveWindowTitle(c *xgb.Conn, window xproto.Window, activeAtom xproto.Atom, nameAtom xproto.Atom) string {
-	// Get the actual value of _NET_ACTIVE_WINDOW.
-	reply, err := xproto.GetProperty(c, false, window, activeAtom,
-		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
-	if err != nil {
-		// no title on error
-		return ""
-	}
-	windowId := xproto.Window(xgb.Get32(reply.Value))
-
-	// Now get the value of _NET_WM_NAME for the active window.
-	reply, err = xproto.GetProperty(c, false, windowId, nameAtom,
-		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
-	if err != nil {
-		// no title on error
-		return ""
-	}
-	return string(reply.Value)
-}
 
 func patchWifiBug(allJson []interface{}) {
 	for _, rawEntry := range allJson {
@@ -54,7 +25,7 @@ func patchWifiBug(allJson []interface{}) {
 				full_text := entry["full_text"].(string)
 				percent := full_text[len(full_text)-4:]
 				if strings.HasPrefix(percent, "0") {
-					// W: ONYX 067%"
+					// W: SOME_WIFI_SSID 067%"
 					fixed_text := full_text[:len(full_text)-4] + full_text[len(full_text)-3:]
 					entry["full_text"] = fixed_text
 				}
@@ -83,86 +54,6 @@ func i3statusPids() []int {
 func signalStatusUpdate(pids []int) {
 	for _, pid := range pids {
 		syscall.Kill(pid, syscall.SIGUSR1)
-	}	
-}
-
-func runTitleChangeDetectionLoop(titleChangeEvents chan<- string, stderr io.Writer) {
-	X, err := xgb.NewConn()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Get the window id of the root window.
-	setup := xproto.Setup(X)
-	root := setup.DefaultScreen(X).Root
-
-	// Get the atom id (i.e., intern an atom) of "_NET_ACTIVE_WINDOW".
-	activeAtom := fetchAtom(X, "_NET_ACTIVE_WINDOW")
-
-	// Get the atom id (i.e., intern an atom) of all the possible window name properties
-	nameAtom := fetchAtom(X, "_NET_WM_NAME")
-	otherNameAtom := fetchAtom(X, "WM_NAME")
-	legacyNameAtom := fetchAtom(X, "_WM_NAME")
-
-	atoms := make(map[xproto.Atom]string)
-	atoms[activeAtom] = "_NET_ACTIVE_WINDOW"
-	atoms[nameAtom] = "_NET_WM_NAME"
-	atoms[otherNameAtom] = "WM_NAME"
-	atoms[legacyNameAtom] = "_WM_NAME"
-
-	// subscribe to events from the root window
-	xproto.ChangeWindowAttributes(X, root,
-		xproto.CwEventMask,
-		[]uint32{ // values must be in the order defined by the protocol
-			xproto.EventMaskStructureNotify |
-				xproto.EventMaskPropertyChange})
-
-	// Start the main event loop.
-	for {
-		// WaitForEvent either returns an event or an error and never both.
-		// If both are nil, then something went wrong and the loop should be
-		// halted.
-		//
-		// An error can only be seen here as a response to an unchecked
-		// request.
-		ev, xerr := X.WaitForEvent()
-		if ev == nil && xerr == nil {
-			fmt.Fprintln(stderr, "Both event and error are nil. Exiting...")
-			return
-		}
-
-		if ev != nil {
-			switch v := ev.(type) {
-			case xproto.PropertyNotifyEvent:
-				switch v.Atom {
-				case nameAtom, otherNameAtom, legacyNameAtom:
-					titleChangeEvents <- "changed"
-					//fmt.Printf("Title change detected: %s\n", atoms[v.Atom])
-				case activeAtom:
-					// subscribe to events of all windows as they are activated
-					titleChangeEvents <- "changed"
-					reply, err := xproto.GetProperty(X, false, root, activeAtom,
-						xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
-					if err != nil {
-						fmt.Fprintln(stderr, err)
-						return
-					}
-					windowId := xproto.Window(xgb.Get32(reply.Value))
-					xproto.ChangeWindowAttributes(X, windowId,
-						xproto.CwEventMask,
-						[]uint32{ // values must be in the order defined by the protocol
-							xproto.EventMaskStructureNotify |
-								xproto.EventMaskPropertyChange})
-				default:
-					// ignore everything else
-					//fmt.Printf("Not title: %d\n", v.Atom)
-				}
-			}
-		}
-
-		if xerr != nil {
-			fmt.Fprintln(stderr, xerr)
-		}
 	}
 }
 
@@ -195,22 +86,7 @@ func runSignalLoop(titleChangeEvents <-chan string) {
 	}
 }
 
-func runJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
-
-	X, err := xgb.NewConn()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Get the window id of the root window.
-	setup := xproto.Setup(X)
-	root := setup.DefaultScreen(X).Root
-
-	// Get the atom id (i.e., intern an atom) of "_NET_ACTIVE_WINDOW".
-	activeAtom := fetchAtom(X, "_NET_ACTIVE_WINDOW")
-
-	// Get the atom id (i.e., intern an atom) of "_NET_WM_NAME".
-	nameAtom := fetchAtom(X, "_NET_WM_NAME")
+func runJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI) int {
 
 	// read from input
 	scanner := bufio.NewScanner(stdin)
@@ -254,7 +130,7 @@ func runJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer) int
 
 		// TODO make color a flag
 		// inject window title node first
-		title := fetchActiveWindowTitle(X, root, activeAtom, nameAtom)
+		title := windowAPI.ActiveWindowTitle()
 		titleNode := map[string]string{
 			"name":      "window_title",
 			"full_text": title,
@@ -286,10 +162,14 @@ func main() {
 	stdout := os.Stdout
 	stderr := os.Stderr
 
+	windowAPI := x11.New()
 	titleChangeEvents := make(chan string, 100)
-	go runTitleChangeDetectionLoop(titleChangeEvents, stderr)
+
+	go windowAPI.BeginTitleChangeDetection(stderr, func() {
+		titleChangeEvents <- "changed"
+	})
 	go runSignalLoop(titleChangeEvents)
 
-	exitCode := runJsonParsingLoop(stdin, stdout, stderr)
+	exitCode := runJsonParsingLoop(stdin, stdout, stderr, windowAPI)
 	os.Exit(exitCode)
 }
