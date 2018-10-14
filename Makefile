@@ -1,7 +1,7 @@
 BUILD_DIR=build
 
 NAME=i3status-custom-bar
-VERSION=0.1.0
+VERSION=0.2.0
 
 .PHONY: all build clean fmt test
 
@@ -16,7 +16,7 @@ build:
 	@echo Build successful.
 
 fmt:
-	go fmt src/i3status-custom-bar/main.go
+	go fmt ./src/...
 
 test:
 	@echo "TODO create test Makefile target"
