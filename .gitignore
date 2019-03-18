@@ -4,9 +4,5 @@
 # build artifacts
 /build/
 
-# golang project per workspace, because I am a stubborn old developer that likes fighting with conventions
-/pkg/
-/src/i3status-custom-bar/vendor/
-
 # because sometimes tmp things are created
 /tmp/
