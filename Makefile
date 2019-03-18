@@ -1,6 +1,6 @@
 BUILD_DIR=build
 
-NAME=i3status-custom-bar
+NAME=i3status-title-on-bar
 VERSION=0.2.0
 
 .PHONY: all build clean fmt test
@@ -12,7 +12,7 @@ clean:
 
 build:
 	mkdir -p $(BUILD_DIR)
-	go build -o $(BUILD_DIR)/$(NAME) $(NAME)
+	cd cmd/$(NAME)/; go build -o ../../$(BUILD_DIR)/$(NAME)
 	@echo Build successful.
 
 fmt:
