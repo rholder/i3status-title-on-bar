@@ -3,7 +3,7 @@ BUILD_DIR=build
 NAME=i3status-title-on-bar
 VERSION=0.2.0
 
-.PHONY: all build clean fmt test
+.PHONY: all build clean fmt test tree
 
 all: clean build
 
@@ -16,7 +16,10 @@ build:
 	@echo Build successful.
 
 fmt:
-	go fmt ./src/...
+	gofmt -w ./cmd/ ./pkg/
 
 test:
 	@echo "TODO create test Makefile target"
+
+tree:
+	tree -I tmp --matchdirs
