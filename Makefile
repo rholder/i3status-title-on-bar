@@ -3,7 +3,7 @@ BUILD_DIR=build
 NAME=i3status-title-on-bar
 VERSION=0.2.0
 
-.PHONY: all build clean fmt test tree
+.PHONY: all build coverage clean fmt test tree
 
 all: clean build
 
@@ -19,7 +19,11 @@ fmt:
 	gofmt -w ./cmd/ ./pkg/
 
 test:
-	@echo "TODO create test Makefile target"
+	mkdir -p $(BUILD_DIR)
+	go test -coverprofile $(BUILD_DIR)/coverage.out ./cmd/...
+
+coverage: test
+	go tool cover -html=$(BUILD_DIR)/coverage.out -o $(BUILD_DIR)/coverage.html
 
 tree:
 	tree -I tmp --matchdirs
