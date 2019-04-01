@@ -12,6 +12,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
 	"github.com/rholder/i3status-title-on-bar/pkg/window"
 	"github.com/rholder/i3status-title-on-bar/pkg/x11"
 )
