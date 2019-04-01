@@ -12,9 +12,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	"i3status-title-on-bar/pkg/window"
-	"i3status-title-on-bar/pkg/x11"
+	"github.com/rholder/i3status-title-on-bar/pkg/window"
+	"github.com/rholder/i3status-title-on-bar/pkg/x11"
 )
 
 func patchWifiBug(allJson []interface{}) {
