@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -34,30 +33,24 @@ func patchWifiBug(allJson []interface{}) {
 	}
 }
 
-func i3statusPids() []int {
-	// Detect with pgrep -x i3status
-	out, err := exec.Command("pgrep", "-x", "i3status").Output()
+func findPidsByProcessName(exactProcessName string) ([]int, error) {
+	// Detect with pgrep -x
+	out, err := exec.Command("pgrep", "-x", exactProcessName).Output()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	pids := strings.Split(strings.TrimSpace(string(out)), "\n")
 	numericPids := make([]int, len(pids))
 	for i, pid := range pids {
 		numericPids[i], err = strconv.Atoi(pid)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 	}
-	return numericPids
+	return numericPids, nil
 }
 
-func signalStatusUpdate(pids []int) {
-	for _, pid := range pids {
-		syscall.Kill(pid, syscall.SIGUSR1)
-	}
-}
-
-func poll(events <-chan string) *string {
+func poll(events <-chan interface{}) *interface{} {
 	select {
 	case msg := <-events:
 		// next message
@@ -68,20 +61,20 @@ func poll(events <-chan string) *string {
 	}
 }
 
-func runSignalLoop(titleChangeEvents <-chan string) {
-	currentStatusPids := i3statusPids()
-
+func runSampleLoop(stop <-chan interface{}, titleChangeEvents <-chan interface{}, onSignal func()) {
 	// main loop
-	for {
+	for poll(stop) == nil {
 		// block here on next event
 		<-titleChangeEvents
 
 		// non-blocking function to drain the channel
 		for poll(titleChangeEvents) != nil {
-			// drain these events
+			// drain these events that may have piled up
 		}
-		// at this point, new events may be sent to the channel while this runs
-		signalStatusUpdate(currentStatusPids)
+		// at this point, new events may be sent to channel
+		onSignal()
+
+		// while the signal function and this sleep run, new events may occur
 		time.Sleep(50 * time.Millisecond)
 	}
 }
@@ -176,12 +169,22 @@ func main() {
 	stderr := os.Stderr
 
 	windowAPI := x11.New()
-	titleChangeEvents := make(chan string, 100)
+	titleChangeEvents := make(chan interface{}, 100)
+	stopSampleLoop := make(chan interface{}, 1)
 
 	go windowAPI.BeginTitleChangeDetection(stderr, func() {
 		titleChangeEvents <- "changed"
 	})
-	go runSignalLoop(titleChangeEvents)
+
+	currentStatusPids, err := findPidsByProcessName("i3status")
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+	}
+	go runSampleLoop(stopSampleLoop, titleChangeEvents, func() {
+		for _, pid := range currentStatusPids {
+			syscall.Kill(pid, syscall.SIGUSR1)
+		}
+	})
 
 	exitCode := runJsonParsingLoop(stdin, stdout, stderr, windowAPI)
 	os.Exit(exitCode)
