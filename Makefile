@@ -20,7 +20,7 @@ fmt:
 
 test:
 	mkdir -p $(BUILD_DIR)
-	go test -coverprofile $(BUILD_DIR)/coverage.out ./cmd/...
+	go test -coverprofile $(BUILD_DIR)/coverage.out ./cmd/... ./pkg/...
 
 coverage: test
 	go tool cover -html=$(BUILD_DIR)/coverage.out -o $(BUILD_DIR)/coverage.html
