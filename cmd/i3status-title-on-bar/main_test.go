@@ -76,7 +76,7 @@ func TestSampleLoopSingleEvent(t *testing.T) {
 
 	titleChangeEvents <- "changed"
 	count := 0
-	runSampleLoop(stopSamples, titleChangeEvents, func() {
+	runSampleLoop(stopSamples, titleChangeEvents, func(value interface{}) {
 		stopSamples <- "stop"
 		count++
 	})
@@ -96,7 +96,7 @@ func TestSampleLoopMultipleEvents(t *testing.T) {
 	titleChangeEvents <- "changed"
 
 	count := 0
-	runSampleLoop(stopSamples, titleChangeEvents, func() {
+	runSampleLoop(stopSamples, titleChangeEvents, func(value interface{}) {
 		stopSamples <- "stop"
 		count++
 	})

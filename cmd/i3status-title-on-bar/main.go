@@ -25,18 +25,18 @@ func poll(events <-chan interface{}) *interface{} {
 	}
 }
 
-func runSampleLoop(stop <-chan interface{}, titleChangeEvents <-chan interface{}, onSignal func()) {
+func runSampleLoop(stop <-chan interface{}, titleChangeEvents <-chan interface{}, onSignal func(interface{})) {
 	// main loop
 	for poll(stop) == nil {
 		// block here on next event
-		<-titleChangeEvents
+		value := <-titleChangeEvents
 
 		// non-blocking function to drain the channel
 		for poll(titleChangeEvents) != nil {
 			// drain these events that may have piled up
 		}
 		// at this point, new events may be sent to channel
-		onSignal()
+		onSignal(value)
 
 		// while the signal function and this sleep run, new events may occur
 		time.Sleep(50 * time.Millisecond)
@@ -48,6 +48,13 @@ func scannerError(out io.Writer, scanner *bufio.Scanner, errorCode int) int {
 		fmt.Fprintf(out, "ERROR from bufio.Scanner: %s\n", scanner.Err())
 	}
 	return errorCode
+}
+
+func newTitleNode(color string, title string) map[string]string {
+	return map[string]string{
+		"name":      "window_title",
+		"full_text": title,
+		"color":     color}
 }
 
 func runJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI) int {
@@ -93,12 +100,11 @@ func runJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 		}
 
 		// TODO make color a flag
+		color := "#00FF00"
+
 		// inject window title node first
 		title := windowAPI.ActiveWindowTitle()
-		titleNode := map[string]string{
-			"name":      "window_title",
-			"full_text": title,
-			"color":     "#00FF00"}
+		titleNode := newTitleNode(color, title)
 
 		// bolt together the JSON
 		var allJson []interface{}
@@ -137,11 +143,12 @@ func main() {
 		titleChangeEvents <- "changed"
 	})
 
-	currentStatusPids, err := process.FindPidsByProcessName("i3status")
-	if err != nil {
-		fmt.Fprintln(stderr, err)
+	currentStatusPids := process.FindPidsByProcessName("i3status")
+	if len(currentStatusPids) == 0 {
+		fmt.Fprintln(stderr, "No i3status PID could be found")
 	}
-	go runSampleLoop(stopSampleLoop, titleChangeEvents, func() {
+
+	go runSampleLoop(stopSampleLoop, titleChangeEvents, func(value interface{}) {
 		for _, pid := range currentStatusPids {
 			syscall.Kill(pid, syscall.SIGUSR1)
 		}
