@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"io"
 	"os"
 	"os/exec"
@@ -59,32 +57,17 @@ func TestJsonParsingLoopBadJSONInput(t *testing.T) {
 }
 
 func TestJsonParsingLoopGoodJSONInput(t *testing.T) {
-	input := `[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 067%"}]`
-	emptyReader := strings.NewReader("\n\n" + input)
+	input := "\n\n" +
+		`[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 067%"}]` +
+		"\n" +
+	    `,[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 064%"}]`
+	lines := strings.NewReader(input)
 	stdout := os.Stdout
 	stderr := os.Stderr
 	windowAPI := TestWindowAPI{}
-	errorCode := runJsonParsingLoop(emptyReader, stdout, stderr, windowAPI)
+	errorCode := runJsonParsingLoop(lines, stdout, stderr, windowAPI)
 	if errorCode != 0 {
 		t.Fatal("Expected no error from parsing loop")
-	}
-}
-
-func TestPatchWifiBug(t *testing.T) {
-	line := `[{"name":"disk_info","instance":"/","markup":"none","full_text":"18.4 GiB"},{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 067%"}]`
-	var jsonPatched, jsonUnpatched []interface{}
-
-	// patched version
-	json.Unmarshal([]byte(line), &jsonPatched)
-	patchWifiBug(jsonPatched)
-	var patched, _ = json.Marshal(jsonPatched)
-
-	// unpatched version
-	json.Unmarshal([]byte(line), &jsonUnpatched)
-	var unpatched, _ = json.Marshal(jsonUnpatched)
-
-	if bytes.Equal(patched, unpatched) {
-		t.Fatal("Expected a difference between patched and unpatched wifi bug fix")
 	}
 }
 
