@@ -6,19 +6,19 @@ import (
 	"strings"
 )
 
-func FindPidsByProcessName(exactProcessName string) ([]int, error) {
+func FindPidsByProcessName(exactProcessName string) []int {
 	// Detect with pgrep -x
 	out, err := exec.Command("pgrep", "-x", exactProcessName).Output()
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	pids := strings.Split(strings.TrimSpace(string(out)), "\n")
-	numericPids := make([]int, len(pids))
-	for i, pid := range pids {
-		numericPids[i], err = strconv.Atoi(pid)
-		if err != nil {
-			return nil, err
+	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+	pids := []int{}
+	for _, line := range lines {
+		pid, err := strconv.Atoi(line)
+		if err == nil {
+			pids = append(pids, pid)
 		}
 	}
-	return numericPids, nil
+	return pids
 }

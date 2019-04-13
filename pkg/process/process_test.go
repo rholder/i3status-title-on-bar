@@ -9,11 +9,8 @@ func TestFindPidsByProcessName(t *testing.T) {
 	cmd := exec.Command("sleep", "2")
 	cmd.Start()
 	currentPid := cmd.Process.Pid
-	pids, err := FindPidsByProcessName("sleep")
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	pids := FindPidsByProcessName("sleep")
+	
 	found := false
 	for _, pid := range pids {
 		if pid == currentPid {
@@ -27,10 +24,7 @@ func TestFindPidsByProcessName(t *testing.T) {
 }
 
 func TestFindPidsByProcessNameNoProcessExists(t *testing.T) {
-	pids, err := FindPidsByProcessName("FAKE_PROCESS_NAME")
-	if err == nil {
-		t.Fatal("Expected an error")
-	}
+	pids := FindPidsByProcessName("FAKE_PROCESS_NAME")
 	if len(pids) > 0 {
 		t.Fatal("Expected no process ids")
 	}
