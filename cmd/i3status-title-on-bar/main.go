@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/rholder/i3status-title-on-bar/pkg/window"
-	"github.com/rholder/i3status-title-on-bar/pkg/x11"
 )
 
 func findPidsByProcessName(exactProcessName string) ([]int, error) {
@@ -148,7 +147,7 @@ func main() {
 	stdout := os.Stdout
 	stderr := os.Stderr
 
-	windowAPI := x11.New()
+	windowAPI := window.NewX11()
 	titleChangeEvents := make(chan interface{}, 100)
 	stopSampleLoop := make(chan interface{}, 1)
 

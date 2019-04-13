@@ -1,4 +1,4 @@
-package x11
+package window
 
 import (
 	"errors"
@@ -23,7 +23,7 @@ type X11 struct {
 	WindowName3Atom xproto.Atom
 }
 
-func New() X11 {
+func NewX11() X11 {
 	xConnection, err := xgb.NewConn()
 	if err != nil {
 		log.Fatal(err)
