@@ -3,12 +3,11 @@ package main
 import (
 	"io"
 	"os"
-	"os/exec"
 	"strings"
 	"testing"
 )
 
-type TestWindowAPI struct {}
+type TestWindowAPI struct{}
 
 func (testWindowAPI TestWindowAPI) ActiveWindowTitle() string {
 	return "foo"
@@ -60,7 +59,7 @@ func TestJsonParsingLoopGoodJSONInput(t *testing.T) {
 	input := "\n\n" +
 		`[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 067%"}]` +
 		"\n" +
-	    `,[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 064%"}]`
+		`,[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 064%"}]`
 	lines := strings.NewReader(input)
 	stdout := os.Stdout
 	stderr := os.Stderr
@@ -104,26 +103,5 @@ func TestSampleLoopMultipleEvents(t *testing.T) {
 
 	if count != 1 {
 		t.Fatal("Expected only 1 stop event")
-	}
-}
-
-func TestFindPidsByProcessName(t *testing.T) {
-	cmd := exec.Command("sleep", "2")
-	cmd.Start()
-	currentPid := cmd.Process.Pid
-	pids, err := findPidsByProcessName("sleep")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	found := false
-	for _, pid := range pids {
-		if pid == currentPid {
-			found = true
-		}
-	}
-	cmd.Wait()
-	if !found {
-		t.Fatal("Expected to find matching PID in search")
 	}
 }

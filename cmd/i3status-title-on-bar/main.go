@@ -6,31 +6,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/rholder/i3status-title-on-bar/pkg/process"
 	"github.com/rholder/i3status-title-on-bar/pkg/window"
 )
-
-func findPidsByProcessName(exactProcessName string) ([]int, error) {
-	// Detect with pgrep -x
-	out, err := exec.Command("pgrep", "-x", exactProcessName).Output()
-	if err != nil {
-		return nil, err
-	}
-	pids := strings.Split(strings.TrimSpace(string(out)), "\n")
-	numericPids := make([]int, len(pids))
-	for i, pid := range pids {
-		numericPids[i], err = strconv.Atoi(pid)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return numericPids, nil
-}
 
 func poll(events <-chan interface{}) *interface{} {
 	select {
@@ -155,7 +137,7 @@ func main() {
 		titleChangeEvents <- "changed"
 	})
 
-	currentStatusPids, err := findPidsByProcessName("i3status")
+	currentStatusPids, err := process.FindPidsByProcessName("i3status")
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 	}
