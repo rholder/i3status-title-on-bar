@@ -16,23 +16,6 @@ import (
 	"github.com/rholder/i3status-title-on-bar/pkg/x11"
 )
 
-func patchWifiBug(allJson []interface{}) {
-	for _, rawEntry := range allJson {
-		switch entry := rawEntry.(type) {
-		case map[string]interface{}:
-			if entry["name"] == "wireless" {
-				full_text := entry["full_text"].(string)
-				percent := full_text[len(full_text)-4:]
-				if strings.HasPrefix(percent, "0") {
-					// W: SOME_WIFI_SSID 067%"
-					fixed_text := full_text[:len(full_text)-4] + full_text[len(full_text)-3:]
-					entry["full_text"] = fixed_text
-				}
-			}
-		}
-	}
-}
-
 func findPidsByProcessName(exactProcessName string) ([]int, error) {
 	// Detect with pgrep -x
 	out, err := exec.Command("pgrep", "-x", exactProcessName).Output()
@@ -140,9 +123,6 @@ func runJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 		var allJson []interface{}
 		allJson = append(allJson, titleNode)
 		allJson = append(allJson, parsed...)
-
-		// TODO make this a flag
-		patchWifiBug(allJson)
 
 		// parsed = append(titleNode, parsed...) // TODO figure out how to do this cleanly
 		parsedJson, err := json.Marshal(allJson)
