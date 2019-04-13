@@ -10,7 +10,7 @@ func TestFindPidsByProcessName(t *testing.T) {
 	cmd.Start()
 	currentPid := cmd.Process.Pid
 	pids := FindPidsByProcessName("sleep")
-	
+
 	found := false
 	for _, pid := range pids {
 		if pid == currentPid {
