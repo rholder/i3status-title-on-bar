@@ -19,7 +19,7 @@ func (testWindowAPI TestWindowAPI) BeginTitleChangeDetection(stderr io.Writer, o
 
 func TestJsonParsingLoopEmptyInput(t *testing.T) {
 	lines := strings.NewReader("")
-	errorCode := runJsonParsingLoop(lines, nil, nil, nil)
+	errorCode := runJsonParsingLoop(lines, nil, nil, nil, "#00FF00")
 	if errorCode != 3 {
 		t.Fatal("Expected error from parsing loop")
 	}
@@ -29,7 +29,7 @@ func TestJsonParsingLoopNewlineInput(t *testing.T) {
 	lines := strings.NewReader("\n")
 	stdout := os.Stdout
 	stderr := os.Stderr
-	errorCode := runJsonParsingLoop(lines, stdout, stderr, nil)
+	errorCode := runJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00")
 	if errorCode != 4 {
 		t.Fatal("Expected error from parsing loop")
 	}
@@ -39,7 +39,7 @@ func TestJsonParsingLoopHappyBlankInput(t *testing.T) {
 	lines := strings.NewReader("\n\n")
 	stdout := os.Stdout
 	stderr := os.Stderr
-	errorCode := runJsonParsingLoop(lines, stdout, stderr, nil)
+	errorCode := runJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00")
 	if errorCode != 0 {
 		t.Fatal("Expected no error from parsing loop")
 	}
@@ -49,7 +49,7 @@ func TestJsonParsingLoopBadJSONInput(t *testing.T) {
 	lines := strings.NewReader("\n\nPOTATO")
 	stdout := os.Stdout
 	stderr := os.Stderr
-	errorCode := runJsonParsingLoop(lines, stdout, stderr, nil)
+	errorCode := runJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00")
 	if errorCode != 5 {
 		t.Fatal("Expected error from parsing loop")
 	}
@@ -64,44 +64,8 @@ func TestJsonParsingLoopGoodJSONInput(t *testing.T) {
 	stdout := os.Stdout
 	stderr := os.Stderr
 	windowAPI := TestWindowAPI{}
-	errorCode := runJsonParsingLoop(lines, stdout, stderr, windowAPI)
+	errorCode := runJsonParsingLoop(lines, stdout, stderr, windowAPI, "#00FF00")
 	if errorCode != 0 {
 		t.Fatal("Expected no error from parsing loop")
-	}
-}
-
-func TestSampleLoopSingleEvent(t *testing.T) {
-	titleChangeEvents := make(chan interface{}, 100)
-	stopSamples := make(chan interface{}, 1)
-
-	titleChangeEvents <- "changed"
-	count := 0
-	runSampleLoop(stopSamples, titleChangeEvents, func(value interface{}) {
-		stopSamples <- "stop"
-		count++
-	})
-
-	if count != 1 {
-		t.Fatal("Expected only 1 stop event")
-	}
-}
-
-func TestSampleLoopMultipleEvents(t *testing.T) {
-	titleChangeEvents := make(chan interface{}, 100)
-	stopSamples := make(chan interface{}, 1)
-
-	titleChangeEvents <- "changed"
-	titleChangeEvents <- "changed"
-	titleChangeEvents <- "changed"
-	titleChangeEvents <- "changed"
-
-	count := 0
-	runSampleLoop(stopSamples, titleChangeEvents, func(value interface{}) {
-		stopSamples <- "stop"
-		count++
-	})
-
-	if count != 1 {
-		t.Fatal("Expected only 1 stop event")
 	}
 }

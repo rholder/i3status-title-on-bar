@@ -8,40 +8,11 @@ import (
 	"os"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/rholder/i3status-title-on-bar/pkg/process"
+	"github.com/rholder/i3status-title-on-bar/pkg/sampler"
 	"github.com/rholder/i3status-title-on-bar/pkg/window"
 )
-
-func poll(events <-chan interface{}) *interface{} {
-	select {
-	case msg := <-events:
-		// next message
-		return &msg
-	default:
-		// nil when there is no next message
-		return nil
-	}
-}
-
-func runSampleLoop(stop <-chan interface{}, titleChangeEvents <-chan interface{}, onSignal func(interface{})) {
-	// main loop
-	for poll(stop) == nil {
-		// block here on next event
-		value := <-titleChangeEvents
-
-		// non-blocking function to drain the channel
-		for poll(titleChangeEvents) != nil {
-			// drain these events that may have piled up
-		}
-		// at this point, new events may be sent to channel
-		onSignal(value)
-
-		// while the signal function and this sleep run, new events may occur
-		time.Sleep(50 * time.Millisecond)
-	}
-}
 
 func scannerError(out io.Writer, scanner *bufio.Scanner, errorCode int) int {
 	if scanner.Err() != nil {
@@ -57,7 +28,7 @@ func newTitleNode(color string, title string) map[string]string {
 		"color":     color}
 }
 
-func runJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI) int {
+func runJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI, color string) int {
 
 	// read from input
 	scanner := bufio.NewScanner(stdin)
@@ -99,9 +70,6 @@ func runJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 			return 5
 		}
 
-		// TODO make color a flag
-		color := "#00FF00"
-
 		// inject window title node first
 		title := windowAPI.ActiveWindowTitle()
 		titleNode := newTitleNode(color, title)
@@ -135,25 +103,28 @@ func main() {
 	stdout := os.Stdout
 	stderr := os.Stderr
 
-	windowAPI := window.NewX11()
-	titleChangeEvents := make(chan interface{}, 100)
-	stopSampleLoop := make(chan interface{}, 1)
-
-	go windowAPI.BeginTitleChangeDetection(stderr, func() {
-		titleChangeEvents <- "changed"
-	})
+	titleChangeEvents := make(chan interface{}, 1000)
 
 	currentStatusPids := process.FindPidsByProcessName("i3status")
 	if len(currentStatusPids) == 0 {
 		fmt.Fprintln(stderr, "No i3status PID could be found")
 	}
 
-	go runSampleLoop(stopSampleLoop, titleChangeEvents, func(value interface{}) {
+	windowAPI := window.NewX11()
+	titleChangeSampler := sampler.NewSampler(titleChangeEvents)
+
+	go windowAPI.BeginTitleChangeDetection(stderr, func() {
+		titleChangeEvents <- "changed"
+	})
+
+	go titleChangeSampler.Run(func(value interface{}) {
 		for _, pid := range currentStatusPids {
 			syscall.Kill(pid, syscall.SIGUSR1)
 		}
 	})
 
-	exitCode := runJsonParsingLoop(stdin, stdout, stderr, windowAPI)
+	// TODO make color a flag
+	color := "#00FF00"
+	exitCode := runJsonParsingLoop(stdin, stdout, stderr, windowAPI, color)
 	os.Exit(exitCode)
 }
