@@ -37,20 +37,20 @@ Report bugs and find the latest updates at https://github.com/rholder/i3status-t
 `
 
 type Config struct {
-	color      string
-	appendEnd  bool
-	fixedWidth int
-	printHelp  bool
+	color        string
+	appendEnd    bool
+	fixedWidth   int
+	printHelp    bool
 	printVersion bool
 }
 
 func newConfig(name string, args []string) (*Config, error) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	var (
-		color = fs.String("color", "#00FF00", "Set the text color of the JSON node")
-		appendEnd = fs.Bool("append-end", false, "Append window title JSON node to the end")
-		fixedWidth = fs.Int("fixed-width", 0, "Trucate and pad to a fixed width")
-		printHelp = fs.Bool("help", false, "Print additional help text and exit")
+		color        = fs.String("color", "#00FF00", "Set the text color of the JSON node")
+		appendEnd    = fs.Bool("append-end", false, "Append window title JSON node to the end")
+		fixedWidth   = fs.Int("fixed-width", 0, "Trucate and pad to a fixed width")
+		printHelp    = fs.Bool("help", false, "Print additional help text and exit")
 		printVersion = fs.Bool("version", false, "Print the version and exit")
 	)
 	// disable default output
@@ -62,7 +62,7 @@ func newConfig(name string, args []string) (*Config, error) {
 
 func shouldExit(stdout io.Writer, config *Config, err error) (bool, int) {
 	if err != nil {
-		fmt.Fprintln(stdout, err.Error() + "\n")
+		fmt.Fprintln(stdout, err.Error()+"\n")
 		fmt.Fprintln(stdout, helpText)
 		return true, 2
 	}
