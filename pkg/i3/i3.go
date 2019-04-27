@@ -24,7 +24,8 @@ func newTitleNode(color string, title string) map[string]string {
 		"color":     color}
 }
 
-func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI, color string) int {
+func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI,
+	color string, appendEnd bool, fixedWidth int) int {
 
 	// read from input
 	scanner := bufio.NewScanner(stdin)

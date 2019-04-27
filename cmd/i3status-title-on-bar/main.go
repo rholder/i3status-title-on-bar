@@ -109,6 +109,6 @@ func main() {
 		process.SignalPidsWithUSR1(currentStatusPids)
 	})
 
-	exitCode := i3.RunJsonParsingLoop(stdin, stdout, stderr, windowAPI, config.color)
+	exitCode := i3.RunJsonParsingLoop(stdin, stdout, stderr, windowAPI, config.color, config.appendEnd, config.fixedWidth)
 	os.Exit(exitCode)
 }

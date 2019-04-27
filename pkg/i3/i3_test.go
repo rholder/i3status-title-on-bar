@@ -19,7 +19,7 @@ func (testWindowAPI TestWindowAPI) BeginTitleChangeDetection(stderr io.Writer, o
 
 func TestJsonParsingLoopEmptyInput(t *testing.T) {
 	lines := strings.NewReader("")
-	errorCode := RunJsonParsingLoop(lines, nil, nil, nil, "#00FF00")
+	errorCode := RunJsonParsingLoop(lines, nil, nil, nil, "#00FF00", false, 0)
 	if errorCode != 3 {
 		t.Fatal("Expected error from parsing loop")
 	}
@@ -29,7 +29,7 @@ func TestJsonParsingLoopNewlineInput(t *testing.T) {
 	lines := strings.NewReader("\n")
 	stdout := os.Stdout
 	stderr := os.Stderr
-	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00")
+	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
 	if errorCode != 4 {
 		t.Fatal("Expected error from parsing loop")
 	}
@@ -39,7 +39,7 @@ func TestJsonParsingLoopHappyBlankInput(t *testing.T) {
 	lines := strings.NewReader("\n\n")
 	stdout := os.Stdout
 	stderr := os.Stderr
-	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00")
+	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
 	if errorCode != 0 {
 		t.Fatal("Expected no error from parsing loop")
 	}
@@ -49,7 +49,7 @@ func TestJsonParsingLoopBadJSONInput(t *testing.T) {
 	lines := strings.NewReader("\n\nPOTATO")
 	stdout := os.Stdout
 	stderr := os.Stderr
-	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00")
+	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
 	if errorCode != 5 {
 		t.Fatal("Expected error from parsing loop")
 	}
@@ -64,7 +64,7 @@ func TestJsonParsingLoopGoodJSONInput(t *testing.T) {
 	stdout := os.Stdout
 	stderr := os.Stderr
 	windowAPI := TestWindowAPI{}
-	errorCode := RunJsonParsingLoop(lines, stdout, stderr, windowAPI, "#00FF00")
+	errorCode := RunJsonParsingLoop(lines, stdout, stderr, windowAPI, "#00FF00", false, 0)
 	if errorCode != 0 {
 		t.Fatal("Expected no error from parsing loop")
 	}
