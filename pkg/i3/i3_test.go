@@ -1,6 +1,7 @@
 package i3
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"strings"
@@ -67,5 +68,43 @@ func TestJsonParsingLoopGoodJSONInput(t *testing.T) {
 	errorCode := RunJsonParsingLoop(lines, stdout, stderr, windowAPI, "#00FF00", false, 0)
 	if errorCode != 0 {
 		t.Fatal("Expected no error from parsing loop")
+	}
+}
+
+func TestJsonParsingLoopGoodJSONInputAppendEnd(t *testing.T) {
+	input := "\n\n" +
+		`[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 067%"}]` +
+		"\n" +
+		`,[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 064%"}]`
+	lines := strings.NewReader(input)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	windowAPI := TestWindowAPI{}
+	errorCode := RunJsonParsingLoop(lines, &stdout, &stderr, windowAPI, "#00FF00", true, 0)
+	if errorCode != 0 {
+		t.Fatal("Expected no error from parsing loop")
+	}
+	output := stdout.String()
+	if !strings.Contains(output, `"full_text":"foo"`) {
+		t.Fatal("Expected to have non-fixed width output")
+	}
+}
+
+func TestJsonParsingLoopGoodJSONInputFixedWidth(t *testing.T) {
+	input := "\n\n" +
+		`[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 067%"}]` +
+		"\n" +
+		`,[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 064%"}]`
+	lines := strings.NewReader(input)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	windowAPI := TestWindowAPI{}
+	errorCode := RunJsonParsingLoop(lines, &stdout, &stderr, windowAPI, "#00FF00", true, 10)
+	if errorCode != 0 {
+		t.Fatal("Expected no error from parsing loop")
+	}
+	output := stdout.String()
+	if !strings.Contains(output, `"full_text":"foo       "`) {
+		t.Fatal("Expected to have fixed width output")
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/rholder/i3status-title-on-bar/pkg/window"
@@ -22,6 +23,16 @@ func newTitleNode(color string, title string) map[string]string {
 		"name":      "window_title",
 		"full_text": title,
 		"color":     color}
+}
+
+func truncateAndPad(value string, fixedWidth int) string {
+	safeSubstring := value
+	if len(value) > fixedWidth {
+		safeSubstring = value[0:fixedWidth]
+	}
+
+	template := "%-" + strconv.Itoa(fixedWidth) + "s"
+	return fmt.Sprintf(template, safeSubstring)
 }
 
 func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI,
@@ -69,12 +80,20 @@ func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 
 		// inject window title node first
 		title := windowAPI.ActiveWindowTitle()
+		if fixedWidth > 0 {
+			title = truncateAndPad(title, fixedWidth)
+		}
 		titleNode := newTitleNode(color, title)
 
 		// bolt together the JSON
 		var allJson []interface{}
-		allJson = append(allJson, titleNode)
-		allJson = append(allJson, parsed...)
+		if appendEnd {
+			allJson = append(allJson, parsed...)
+			allJson = append(allJson, titleNode)
+		} else {
+			allJson = append(allJson, titleNode)
+			allJson = append(allJson, parsed...)
+		}
 
 		// parsed = append(titleNode, parsed...) // TODO figure out how to do this cleanly
 		parsedJson, err := json.Marshal(allJson)
