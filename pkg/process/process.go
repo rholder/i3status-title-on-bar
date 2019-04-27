@@ -4,6 +4,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 func FindPidsByProcessName(exactProcessName string) []int {
@@ -21,4 +22,10 @@ func FindPidsByProcessName(exactProcessName string) []int {
 		}
 	}
 	return pids
+}
+
+func SignalPidsWithUSR1(pids []int) {
+	for _, pid := range pids {
+		syscall.Kill(pid, syscall.SIGUSR1)
+	}
 }
