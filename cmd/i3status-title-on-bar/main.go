@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"syscall"
 
 	"github.com/rholder/i3status-title-on-bar/pkg/i3"
 	"github.com/rholder/i3status-title-on-bar/pkg/process"
@@ -15,6 +14,7 @@ import (
 )
 
 const version = "1.0.0"
+const defaultColor = "#00FF00"
 const helpText = `Usage: i3status-title-on-bar [OPTIONS...]
 
   Use i3status-title-on-bar to prepend the currently active X11 window title
@@ -47,7 +47,7 @@ type Config struct {
 func newConfig(name string, args []string) (*Config, error) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	var (
-		color        = fs.String("color", "#00FF00", "Set the text color of the JSON node")
+		color        = fs.String("color", defaultColor, "Set the text color of the JSON node")
 		appendEnd    = fs.Bool("append-end", false, "Append window title JSON node to the end")
 		fixedWidth   = fs.Int("fixed-width", 0, "Trucate and pad to a fixed width")
 		printHelp    = fs.Bool("help", false, "Print additional help text and exit")
@@ -106,9 +106,7 @@ func main() {
 	})
 
 	go titleChangeSampler.Run(func(value interface{}) {
-		for _, pid := range currentStatusPids {
-			syscall.Kill(pid, syscall.SIGUSR1)
-		}
+		process.SignalPidsWithUSR1(currentStatusPids)
 	})
 
 	exitCode := i3.RunJsonParsingLoop(stdin, stdout, stderr, windowAPI, config.color)
