@@ -2,7 +2,6 @@ package i3
 
 import (
 	"bytes"
-	"io"
 	"os"
 	"strings"
 	"testing"
@@ -14,7 +13,7 @@ func (testWindowAPI TestWindowAPI) ActiveWindowTitle() string {
 	return "foo"
 }
 
-func (testWindowAPI TestWindowAPI) BeginTitleChangeDetection(stderr io.Writer, onChange func()) error {
+func (testWindowAPI TestWindowAPI) BeginTitleChangeDetection(onChange func(), onError func(error)) error {
 	return nil
 }
 

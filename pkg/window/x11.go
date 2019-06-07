@@ -2,8 +2,6 @@ package window
 
 import (
 	"errors"
-	"fmt"
-	"io"
 	"log"
 
 	"github.com/BurntSushi/xgb"
@@ -59,7 +57,7 @@ func (x11 X11) ActiveWindowTitle() string {
 	return string(reply.Value)
 }
 
-func (x11 X11) BeginTitleChangeDetection(stderr io.Writer, onChange func()) error {
+func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) error {
 	// subscribe to events from the root window
 	xproto.ChangeWindowAttributes(x11.XConnection, x11.RootWindow,
 		xproto.CwEventMask,
@@ -68,6 +66,8 @@ func (x11 X11) BeginTitleChangeDetection(stderr io.Writer, onChange func()) erro
 				xproto.EventMaskPropertyChange})
 
 	// Start the main event loop.
+	// TODO refactor this to remove the infinite loop
+	// TODO refactor method to remove error writer, replace with onError function
 	for {
 		// WaitForEvent either returns an event or an error and never both.
 		// If both are nil, then something went wrong and the loop should be
@@ -77,8 +77,9 @@ func (x11 X11) BeginTitleChangeDetection(stderr io.Writer, onChange func()) erro
 		// request.
 		ev, xerr := x11.XConnection.WaitForEvent()
 		if ev == nil && xerr == nil {
-			fmt.Fprintln(stderr, "Both event and error are nil. Exiting...")
-			return errors.New("Both event and error are nil. Exiting...")
+			err := errors.New("Both event and error are nil. Exiting...")
+			onError(err)
+			return err
 		}
 
 		if ev != nil {
@@ -93,7 +94,7 @@ func (x11 X11) BeginTitleChangeDetection(stderr io.Writer, onChange func()) erro
 					reply, err := xproto.GetProperty(x11.XConnection, false, x11.RootWindow, x11.ActiveWindowAtom,
 						xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 					if err != nil {
-						fmt.Fprintln(stderr, err)
+						onError(err)
 						return err
 					}
 					windowId := xproto.Window(xgb.Get32(reply.Value))
@@ -110,7 +111,7 @@ func (x11 X11) BeginTitleChangeDetection(stderr io.Writer, onChange func()) erro
 		}
 
 		if xerr != nil {
-			fmt.Fprintln(stderr, xerr)
+			onError(xerr)
 		}
 	}
 }

@@ -101,8 +101,10 @@ func main() {
 	windowAPI := window.NewX11()
 	titleChangeSampler := sampler.NewSampler(titleChangeEvents, 50)
 
-	go windowAPI.BeginTitleChangeDetection(stderr, func() {
+	go windowAPI.BeginTitleChangeDetection(func() {
 		titleChangeEvents <- "changed"
+	}, func(err error) {
+		fmt.Fprintln(stderr, err)
 	})
 
 	go titleChangeSampler.Run(func(value interface{}) {
