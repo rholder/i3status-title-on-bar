@@ -21,20 +21,20 @@ type X11 struct {
 	WindowName3Atom xproto.Atom
 }
 
-func NewX11() X11 {
+func NewX11() (*X11, error){
 	xConnection, err := xgb.NewConn()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return X11{
+	return &X11{
 		XConnection:      xConnection,
 		RootWindow:       xproto.Setup(xConnection).DefaultScreen(xConnection).Root,
 		ActiveWindowAtom: fetchAtom(xConnection, "_NET_ACTIVE_WINDOW"),
 		WindowNameAtom:   fetchAtom(xConnection, "_NET_WM_NAME"),
 		WindowName2Atom:  fetchAtom(xConnection, "WM_NAME"),
 		WindowName3Atom:  fetchAtom(xConnection, "_WM_NAME"),
-	}
+	}, nil
 }
 
 func (x11 X11) subscribeToActiveWindowChangeEvents() error {

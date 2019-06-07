@@ -98,7 +98,10 @@ func main() {
 		fmt.Fprintln(stderr, "No i3status PID could be found")
 	}
 
-	windowAPI := window.NewX11()
+	windowAPI, err := window.NewX11()
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+	}
 	titleChangeSampler := sampler.NewSampler(titleChangeEvents, 50)
 
 	go windowAPI.BeginTitleChangeDetection(func() {
