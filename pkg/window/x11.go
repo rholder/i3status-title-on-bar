@@ -37,6 +37,21 @@ func NewX11() X11 {
 	}
 }
 
+func (x11 X11) subscribeToActiveWindowChangeEvents() error {
+	reply, err := xproto.GetProperty(x11.XConnection, false, x11.RootWindow, x11.ActiveWindowAtom,
+		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
+	if err != nil {
+		return err
+	}
+	windowId := xproto.Window(xgb.Get32(reply.Value))
+	xproto.ChangeWindowAttributes(x11.XConnection, windowId,
+		xproto.CwEventMask,
+		[]uint32{ // values must be in the order defined by the protocol
+			xproto.EventMaskStructureNotify |
+				xproto.EventMaskPropertyChange})
+	return nil
+}
+
 func (x11 X11) ActiveWindowTitle() string {
 	// Get the actual value of _NET_ACTIVE_WINDOW.
 	reply, err := xproto.GetProperty(x11.XConnection, false, x11.RootWindow, x11.ActiveWindowAtom,
@@ -91,18 +106,11 @@ func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) e
 				case x11.ActiveWindowAtom:
 					// subscribe to events of all windows as they are activated
 					onChange()
-					reply, err := xproto.GetProperty(x11.XConnection, false, x11.RootWindow, x11.ActiveWindowAtom,
-						xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
+					err := x11.subscribeToActiveWindowChangeEvents()
 					if err != nil {
 						onError(err)
 						return err
 					}
-					windowId := xproto.Window(xgb.Get32(reply.Value))
-					xproto.ChangeWindowAttributes(x11.XConnection, windowId,
-						xproto.CwEventMask,
-						[]uint32{ // values must be in the order defined by the protocol
-							xproto.EventMaskStructureNotify |
-								xproto.EventMaskPropertyChange})
 				default:
 					// ignore everything else
 					//fmt.Printf("Not title: %d\n", v.Atom)
