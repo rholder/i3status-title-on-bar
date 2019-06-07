@@ -6,7 +6,7 @@ import (
 
 func TestSampleLoopSingleEvent(t *testing.T) {
 	events := make(chan interface{}, 100)
-	s := NewSampler(events)
+	s := NewSampler(events, 50)
 	events <- "changed"
 	count := 0
 	s.Run(func(value interface{}) {
@@ -21,7 +21,7 @@ func TestSampleLoopSingleEvent(t *testing.T) {
 
 func TestSampleLoopMultipleEvents(t *testing.T) {
 	events := make(chan interface{}, 100)
-	s := NewSampler(events)
+	s := NewSampler(events, 50)
 
 	events <- "changed"
 	events <- "changed"

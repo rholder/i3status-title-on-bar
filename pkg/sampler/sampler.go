@@ -7,14 +7,14 @@ import (
 type Sampler struct {
 	events chan interface{}
 	stop   chan interface{}
-	timeMs int
+	timeMs time.Duration
 }
 
-func NewSampler(events chan interface{}) Sampler {
+func NewSampler(events chan interface{}, timeMs int) Sampler {
 	return Sampler{
 		events: events,
 		stop:   make(chan interface{}, 1),
-		timeMs: 50,
+		timeMs: time.Millisecond * time.Duration(timeMs),
 	}
 }
 
@@ -38,7 +38,7 @@ func (sampler Sampler) Run(onSignal func(interface{})) {
 		onSignal(value)
 
 		// while the signal function and this sleep run, new events may occur
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(sampler.timeMs)
 	}
 }
 
