@@ -111,7 +111,6 @@ func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) e
 					err := x11.subscribeToActiveWindowChangeEvents()
 					if err != nil {
 						onError(err)
-						return err
 					}
 				default:
 					// ignore everything else
