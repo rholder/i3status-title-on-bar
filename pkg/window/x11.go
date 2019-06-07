@@ -38,12 +38,15 @@ func NewX11() X11 {
 }
 
 func (x11 X11) subscribeToActiveWindowChangeEvents() error {
+	// get the currently active windowId
 	reply, err := xproto.GetProperty(x11.XConnection, false, x11.RootWindow, x11.ActiveWindowAtom,
 		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 	if err != nil {
 		return err
 	}
 	windowId := xproto.Window(xgb.Get32(reply.Value))
+
+	// subscribe this XConnection to changes in window attributes, like the title attribute
 	xproto.ChangeWindowAttributes(x11.XConnection, windowId,
 		xproto.CwEventMask,
 		[]uint32{ // values must be in the order defined by the protocol
@@ -82,7 +85,6 @@ func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) e
 
 	// Start the main event loop.
 	// TODO refactor this to remove the infinite loop
-	// TODO refactor method to remove error writer, replace with onError function
 	for {
 		// WaitForEvent either returns an event or an error and never both.
 		// If both are nil, then something went wrong and the loop should be
@@ -113,7 +115,6 @@ func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) e
 					}
 				default:
 					// ignore everything else
-					//fmt.Printf("Not title: %d\n", v.Atom)
 				}
 			}
 		}
