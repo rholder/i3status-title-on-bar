@@ -13,7 +13,9 @@ import (
 	"github.com/rholder/i3status-title-on-bar/pkg/window"
 )
 
-const version = "1.0.0"
+// override this via: go build "-ldflags main.Version=x.x.x", defaults to 0.0.0-dev if unset
+var Version string = "0.0.0-dev"
+
 const titleChangeSampleMs = 50
 const titleChangeEventBufferSize = 1000
 const defaultColor = "#00FF00"
@@ -75,7 +77,7 @@ func shouldExit(stdout io.Writer, config *Config, err error) (bool, int) {
 	}
 
 	if config.printVersion {
-		fmt.Fprintln(stdout, version)
+		fmt.Fprintln(stdout, Version)
 		return true, 1
 	}
 
