@@ -2,7 +2,6 @@ package window
 
 import (
 	"errors"
-	"log"
 
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/xproto"
@@ -27,13 +26,35 @@ func NewX11() (*X11, error){
 		return nil, err
 	}
 
+	rootWindow := xproto.Setup(xConnection).DefaultScreen(xConnection).Root
+
+	activeWindowAtom, err := fetchAtom(xConnection, "_NET_ACTIVE_WINDOW")
+	if err != nil {
+		return nil, err
+	}
+
+	windowNameAtom, err := fetchAtom(xConnection, "_NET_WM_NAME")
+	if err != nil {
+		return nil, err
+	}
+
+	windowName2Atom, err := fetchAtom(xConnection, "WM_NAME")
+	if err != nil {
+		return nil, err
+	}
+
+	windowName3Atom, err := fetchAtom(xConnection, "_WM_NAME")
+	if err != nil {
+		return nil, err
+	}
+
 	return &X11{
 		XConnection:      xConnection,
-		RootWindow:       xproto.Setup(xConnection).DefaultScreen(xConnection).Root,
-		ActiveWindowAtom: fetchAtom(xConnection, "_NET_ACTIVE_WINDOW"),
-		WindowNameAtom:   fetchAtom(xConnection, "_NET_WM_NAME"),
-		WindowName2Atom:  fetchAtom(xConnection, "WM_NAME"),
-		WindowName3Atom:  fetchAtom(xConnection, "_WM_NAME"),
+		RootWindow:       rootWindow,
+		ActiveWindowAtom: *activeWindowAtom,
+		WindowNameAtom:   *windowNameAtom,
+		WindowName2Atom:  *windowName2Atom,
+		WindowName3Atom:  *windowName3Atom,
 	}, nil
 }
 
@@ -124,11 +145,11 @@ func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) e
 	}
 }
 
-func fetchAtom(c *xgb.Conn, name string) xproto.Atom {
+func fetchAtom(c *xgb.Conn, name string) (*xproto.Atom, error) {
 	// Get the atom id (i.e., intern an atom) of "name".
 	cookie, err := xproto.InternAtom(c, true, uint16(len(name)), name).Reply()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return cookie.Atom
+	return &cookie.Atom, nil
 }
