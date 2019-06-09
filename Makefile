@@ -1,7 +1,7 @@
 BUILD_DIR=build
 
 NAME=i3status-title-on-bar
-VERSION=0.2.0
+VERSION=0.3.0
 
 .PHONY: all build coverage clean fmt test tree
 
@@ -12,7 +12,7 @@ clean:
 
 build:
 	mkdir -p $(BUILD_DIR)
-	cd cmd/$(NAME)/; go build -o ../../$(BUILD_DIR)/$(NAME)
+	cd cmd/$(NAME)/; go build -ldflags "-w -s -X main.Version=$(VERSION)" -o ../../$(BUILD_DIR)/$(NAME)
 	@echo Build successful.
 
 fmt:
