@@ -101,14 +101,14 @@ func main() {
 	if len(currentStatusPids) == 0 {
 		// no i3status means nothing to update on window title change
 		fmt.Fprintln(stderr, "No i3status PID could be found")
-		os.Exit(8)
+		os.Exit(i3.MissingStatusProcessErrorCode)
 	}
 
 	windowAPI, err := window.NewX11()
 	if err != nil {
 		// any display error on creation is fatal
 		fmt.Fprintln(stderr, err)
-		os.Exit(9)
+		os.Exit(i3.BadDisplayErrorCode)
 	}
 	titleChangeSampler := sampler.NewSampler(titleChangeEvents, titleChangeSampleMs)
 
