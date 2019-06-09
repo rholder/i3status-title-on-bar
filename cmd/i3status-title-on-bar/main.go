@@ -14,6 +14,8 @@ import (
 )
 
 const version = "1.0.0"
+const titleChangeSampleMs = 50
+const titleChangeEventBufferSize = 1000
 const defaultColor = "#00FF00"
 const helpText = `Usage: i3status-title-on-bar [OPTIONS...]
 
@@ -91,7 +93,7 @@ func main() {
 		os.Exit(code)
 	}
 
-	titleChangeEvents := make(chan interface{}, 1000)
+	titleChangeEvents := make(chan interface{}, titleChangeEventBufferSize)
 
 	currentStatusPids := process.FindPidsByProcessName("i3status")
 	if len(currentStatusPids) == 0 {
@@ -102,7 +104,7 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 	}
-	titleChangeSampler := sampler.NewSampler(titleChangeEvents, 50)
+	titleChangeSampler := sampler.NewSampler(titleChangeEvents, titleChangeSampleMs)
 
 	go windowAPI.BeginTitleChangeDetection(func() {
 		titleChangeEvents <- "changed"
