@@ -18,8 +18,6 @@ const (
 	BadInputJSONErrorCode         int = 5
 	BadCreatedJSONErrorCode       int = 6
 	BadEOFErrorCode               int = 7
-	MissingStatusProcessErrorCode int = 8
-	BadDisplayErrorCode           int = 9
 )
 
 func scannerError(out io.Writer, scanner *bufio.Scanner, errorCode int) int {

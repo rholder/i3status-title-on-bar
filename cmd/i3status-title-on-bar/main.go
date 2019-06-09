@@ -40,6 +40,13 @@ Examples:
 Report bugs and find the latest updates at https://github.com/rholder/i3status-title-on-bar.
 `
 
+const (
+	PrintErrorCode                int = 1
+	BadConfigErrorCode            int = 2
+	MissingStatusProcessErrorCode int = 8
+	BadDisplayErrorCode           int = 9
+)
+
 type Config struct {
 	color        string
 	appendEnd    bool
@@ -68,17 +75,17 @@ func shouldExit(stdout io.Writer, config *Config, err error) (bool, int) {
 	if err != nil {
 		fmt.Fprintln(stdout, err.Error()+"\n")
 		fmt.Fprintln(stdout, helpText)
-		return true, 2
+		return true, BadConfigErrorCode
 	}
 
 	if config.printHelp {
 		fmt.Fprintln(stdout, helpText)
-		return true, 1
+		return true, PrintErrorCode
 	}
 
 	if config.printVersion {
 		fmt.Fprintln(stdout, Version)
-		return true, 1
+		return true, PrintErrorCode
 	}
 
 	return false, 0
@@ -101,14 +108,14 @@ func main() {
 	if len(currentStatusPids) == 0 {
 		// no i3status means nothing to update on window title change
 		fmt.Fprintln(stderr, "No i3status PID could be found")
-		os.Exit(i3.MissingStatusProcessErrorCode)
+		os.Exit(MissingStatusProcessErrorCode)
 	}
 
 	windowAPI, err := window.NewX11()
 	if err != nil {
 		// any display error on creation is fatal
 		fmt.Fprintln(stderr, err)
-		os.Exit(i3.BadDisplayErrorCode)
+		os.Exit(BadDisplayErrorCode)
 	}
 	titleChangeSampler := sampler.NewSampler(titleChangeEvents, titleChangeSampleMs)
 
