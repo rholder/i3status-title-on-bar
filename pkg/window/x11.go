@@ -20,7 +20,7 @@ type X11 struct {
 	WindowName3Atom xproto.Atom
 }
 
-func NewX11() (*X11, error){
+func NewX11() (*X11, error) {
 	xConnection, err := xgb.NewConn()
 	if err != nil {
 		return nil, err
