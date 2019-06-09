@@ -20,7 +20,7 @@ func (testWindowAPI TestWindowAPI) BeginTitleChangeDetection(onChange func(), on
 func TestJsonParsingLoopEmptyInput(t *testing.T) {
 	lines := strings.NewReader("")
 	errorCode := RunJsonParsingLoop(lines, nil, nil, nil, "#00FF00", false, 0)
-	if errorCode != 3 {
+	if errorCode != BadInputOpenErrorCode {
 		t.Fatal("Expected error from parsing loop")
 	}
 }
@@ -30,7 +30,7 @@ func TestJsonParsingLoopNewlineInput(t *testing.T) {
 	stdout := os.Stdout
 	stderr := os.Stderr
 	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
-	if errorCode != 4 {
+	if errorCode != BadInputHeaderErrorCode {
 		t.Fatal("Expected error from parsing loop")
 	}
 }
@@ -40,7 +40,7 @@ func TestJsonParsingLoopHappyBlankInput(t *testing.T) {
 	stdout := os.Stdout
 	stderr := os.Stderr
 	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
-	if errorCode != 0 {
+	if errorCode != OK {
 		t.Fatal("Expected no error from parsing loop")
 	}
 }
@@ -50,7 +50,7 @@ func TestJsonParsingLoopBadJSONInput(t *testing.T) {
 	stdout := os.Stdout
 	stderr := os.Stderr
 	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
-	if errorCode != 5 {
+	if errorCode != BadInputJSONErrorCode {
 		t.Fatal("Expected error from parsing loop")
 	}
 }
@@ -65,7 +65,7 @@ func TestJsonParsingLoopGoodJSONInput(t *testing.T) {
 	stderr := os.Stderr
 	windowAPI := TestWindowAPI{}
 	errorCode := RunJsonParsingLoop(lines, stdout, stderr, windowAPI, "#00FF00", false, 0)
-	if errorCode != 0 {
+	if errorCode != OK {
 		t.Fatal("Expected no error from parsing loop")
 	}
 }
@@ -80,7 +80,7 @@ func TestJsonParsingLoopGoodJSONInputAppendEnd(t *testing.T) {
 	var stderr bytes.Buffer
 	windowAPI := TestWindowAPI{}
 	errorCode := RunJsonParsingLoop(lines, &stdout, &stderr, windowAPI, "#00FF00", true, 0)
-	if errorCode != 0 {
+	if errorCode != OK {
 		t.Fatal("Expected no error from parsing loop")
 	}
 	output := stdout.String()
@@ -99,7 +99,7 @@ func TestJsonParsingLoopGoodJSONInputFixedWidth(t *testing.T) {
 	var stderr bytes.Buffer
 	windowAPI := TestWindowAPI{}
 	errorCode := RunJsonParsingLoop(lines, &stdout, &stderr, windowAPI, "#00FF00", true, 10)
-	if errorCode != 0 {
+	if errorCode != OK {
 		t.Fatal("Expected no error from parsing loop")
 	}
 	output := stdout.String()

@@ -11,6 +11,17 @@ import (
 	"github.com/rholder/i3status-title-on-bar/pkg/window"
 )
 
+const (
+	OK                            int = 0
+	BadInputOpenErrorCode         int = 3
+	BadInputHeaderErrorCode       int = 4
+	BadInputJSONErrorCode         int = 5
+	BadCreatedJSONErrorCode       int = 6
+	BadEOFErrorCode               int = 7
+	MissingStatusProcessErrorCode int = 8
+	BadDisplayErrorCode           int = 9
+)
+
 func scannerError(out io.Writer, scanner *bufio.Scanner, errorCode int) int {
 	if scanner.Err() != nil {
 		fmt.Fprintf(out, "ERROR from bufio.Scanner: %s\n", scanner.Err())
@@ -45,7 +56,7 @@ func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 	// {"version":1}
 	if !scanner.Scan() {
 		// TODO happens way too often, be more resilient to bad scanner starts from stdin
-		return scannerError(stderr, scanner, 3)
+		return scannerError(stderr, scanner, BadInputOpenErrorCode)
 	}
 	line := strings.TrimSpace(scanner.Text())
 	fmt.Fprintf(stdout, "%s\n", line)
@@ -53,7 +64,7 @@ func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 	// The second line contains the start of the infinite array.
 	// [
 	if !scanner.Scan() {
-		return scannerError(stderr, scanner, 4)
+		return scannerError(stderr, scanner, BadInputHeaderErrorCode)
 	}
 	line = strings.TrimSpace(scanner.Text())
 	fmt.Fprintf(stdout, "%s\n", line)
@@ -75,7 +86,7 @@ func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 		err := json.Unmarshal([]byte(line), &parsed)
 		if err != nil {
 			fmt.Fprintln(stderr, err)
-			return 5
+			return BadInputJSONErrorCode
 		}
 
 		// inject window title node first
@@ -99,7 +110,7 @@ func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 		parsedJson, err := json.Marshal(allJson)
 		if err != nil {
 			fmt.Fprintln(stderr, err)
-			return 6
+			return BadCreatedJSONErrorCode
 		}
 
 		// output i3bar JSON
@@ -107,9 +118,9 @@ func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 	}
 
 	if scanner.Err() != nil {
-		return scannerError(stderr, scanner, 7)
+		return scannerError(stderr, scanner, BadEOFErrorCode)
 	} else {
-		// we hit EOL normally, everything is fine
-		return 0
+		// we hit EOF normally, everything is fine
+		return OK
 	}
 }
