@@ -7,19 +7,33 @@ import (
 	"github.com/BurntSushi/xgb/xproto"
 )
 
+// State for an active X11 connection is managed here.
 type X11 struct {
+	// This is the underlying X11 connection.
 	XConnection      *xgb.Conn
+
+	// This is the root window.
 	RootWindow       xproto.Window
+
+	// The value of this atom should be the currently active window identifier.
+	// NOTE: Sometimes there is no currently active window.
 	ActiveWindowAtom xproto.Atom
 
-	// this is the canonical window title atom, always the real title
+	// This is the canonical window title atom. When the value for it is
+	// retrieved, it should always return the current real window title.
 	WindowNameAtom xproto.Atom
 
-	// common window title atoms that also indicate the title has been updated
+	// This is a common window title atom. Any changes that occur for it may
+	// indicate the title has been updated.
 	WindowName2Atom xproto.Atom
+
+	// This is another common window title atom. Any changes that occur for it
+	// may indicate the title has been updated.
 	WindowName3Atom xproto.Atom
 }
 
+// Start up a new connection to an X11 display server, interning all necessary
+// atoms up front and setting up the root window.
 func NewX11() (*X11, error) {
 	xConnection, err := xgb.NewConn()
 	if err != nil {
@@ -58,7 +72,7 @@ func NewX11() (*X11, error) {
 	}, nil
 }
 
-// Get the currently active window.
+// Get the currently active xproto.Window.
 func (x11 X11) activeWindow() (*xproto.Window, error) {
 	// Get the actual value of _NET_ACTIVE_WINDOW.
 	reply, err := xproto.GetProperty(x11.XConnection, false, x11.RootWindow, x11.ActiveWindowAtom,
@@ -70,7 +84,7 @@ func (x11 X11) activeWindow() (*xproto.Window, error) {
 	return &window, nil
 }
 
-// Get the title of the given window.
+// Get the title attribute as a string of the given xproto.Window.
 func (x11 X11) windowTitleProperty(window xproto.Window) (*string, error) {
 	// Now get the value of _NET_WM_NAME for the active window.
 	reply, err := xproto.GetProperty(x11.XConnection, false, window, x11.WindowNameAtom,
@@ -82,8 +96,9 @@ func (x11 X11) windowTitleProperty(window xproto.Window) (*string, error) {
 	return &title, nil
 }
 
+// Subscribe the current XConnection to change events in window attributes (like
+// the title attribute) for the given xproto.Window.
 func (x11 X11) subscribeToWindowChangeEvents(window xproto.Window) {
-	// subscribe this XConnection to changes in window attributes, like the title attribute
 	xproto.ChangeWindowAttributes(x11.XConnection, window,
 		xproto.CwEventMask,
 		[]uint32{ // values must be in the order defined by the protocol
@@ -91,6 +106,8 @@ func (x11 X11) subscribeToWindowChangeEvents(window xproto.Window) {
 				xproto.EventMaskPropertyChange})
 }
 
+// Return the currently active window title or an empty string if one is not
+// available.
 func (x11 X11) ActiveWindowTitle() string {
 	activeWindow, err := x11.activeWindow()
 	if err != nil {
@@ -107,11 +124,12 @@ func (x11 X11) ActiveWindowTitle() string {
 }
 
 func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) error {
-	// subscribe to events from the root window
+	// Subscribe to events from the root window.
 	x11.subscribeToWindowChangeEvents(x11.RootWindow)
 
+	// TODO Refactor this infinite loop when xgb supports a clean shut down.
+
 	// Start the main event loop.
-	// TODO refactor this to remove the infinite loop
 	for {
 		// WaitForEvent either returns an event or an error and never both.
 		// If both are nil, then something went wrong and the loop should be
@@ -126,6 +144,7 @@ func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) e
 			return err
 		}
 
+		// Filter this event down to only what we care about.
 		if ev != nil {
 			switch v := ev.(type) {
 			case xproto.PropertyNotifyEvent:
@@ -135,7 +154,9 @@ func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) e
 				case x11.ActiveWindowAtom:
 					onChange()
 
-					// subscribe to events of all windows as they are activated
+					// Subscribe to events of all windows as they are activated.
+					// This is the trick to get complex windows that change
+					// their titles as tabs are activated to be detected.
 					activeWindow, err := x11.activeWindow()
 					if err != nil {
 						onError(err)
@@ -143,19 +164,20 @@ func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) e
 						x11.subscribeToWindowChangeEvents(*activeWindow)
 					}
 				default:
-					// ignore everything else
+					// Ignore everything else.
 				}
 			}
 		}
 
+		// An error from the X11 event loop is not fatal.
 		if xerr != nil {
 			onError(xerr)
 		}
 	}
 }
 
+// Get the atom id (i.e., intern an atom) of the given name.
 func fetchAtom(c *xgb.Conn, name string) (*xproto.Atom, error) {
-	// Get the atom id (i.e., intern an atom) of "name".
 	cookie, err := xproto.InternAtom(c, true, uint16(len(name)), name).Reply()
 	if err != nil {
 		return nil, err
