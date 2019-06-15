@@ -12,12 +12,12 @@ import (
 )
 
 const (
-	OK                            int = 0
-	BadInputOpenErrorCode         int = 3
-	BadInputHeaderErrorCode       int = 4
-	BadInputJSONErrorCode         int = 5
-	BadCreatedJSONErrorCode       int = 6
-	BadEOFErrorCode               int = 7
+	OK                      int = 0
+	BadInputOpenErrorCode   int = 3
+	BadInputHeaderErrorCode int = 4
+	BadInputJSONErrorCode   int = 5
+	BadCreatedJSONErrorCode int = 6
+	BadEOFErrorCode         int = 7
 )
 
 func scannerError(out io.Writer, scanner *bufio.Scanner, errorCode int) int {
