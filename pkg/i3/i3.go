@@ -11,6 +11,7 @@ import (
 	"github.com/rholder/i3status-title-on-bar/pkg/window"
 )
 
+// Non-zero error codes signal different bad exit conditions. Zero is ok.
 const (
 	OK                      int = 0
 	BadInputOpenErrorCode   int = 3
@@ -44,10 +45,13 @@ func truncateAndPad(value string, fixedWidth int) string {
 	return fmt.Sprintf(template, safeSubstring)
 }
 
+// RunJsonParsingLoop parses the incoming JSON coming in from an
+// i3status-formatted source, adds the window title to the JSON as configured by
+// the given parameters, and outputs the modified JSON.
 func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI,
 	color string, appendEnd bool, fixedWidth int) int {
 
-	// read from input
+	// Read from input using a Scanner.
 	scanner := bufio.NewScanner(stdin)
 
 	// Skip the first line which contains the version header.
@@ -95,17 +99,17 @@ func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 		titleNode := newTitleNode(color, title)
 
 		// bolt together the JSON
-		var allJson []interface{}
+		var allJSON []interface{}
 		if appendEnd {
-			allJson = append(allJson, parsed...)
-			allJson = append(allJson, titleNode)
+			allJSON = append(allJSON, parsed...)
+			allJSON = append(allJSON, titleNode)
 		} else {
-			allJson = append(allJson, titleNode)
-			allJson = append(allJson, parsed...)
+			allJSON = append(allJSON, titleNode)
+			allJSON = append(allJSON, parsed...)
 		}
 
 		// parsed = append(titleNode, parsed...) // TODO figure out how to do this cleanly
-		parsedJson, err := json.Marshal(allJson)
+		parsedJson, err := json.Marshal(allJSON)
 		if err != nil {
 			fmt.Fprintln(stderr, err)
 			return BadCreatedJSONErrorCode
