@@ -45,10 +45,10 @@ func truncateAndPad(value string, fixedWidth int) string {
 	return fmt.Sprintf(template, safeSubstring)
 }
 
-// RunJsonParsingLoop parses the incoming JSON coming in from an
+// RunJSONParsingLoop parses the incoming JSON coming in from an
 // i3status-formatted source, adds the window title to the JSON as configured by
 // the given parameters, and outputs the modified JSON.
-func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI,
+func RunJSONParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI,
 	color string, appendEnd bool, fixedWidth int) int {
 
 	// Read from input using a Scanner.
@@ -109,20 +109,20 @@ func RunJsonParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, win
 		}
 
 		// parsed = append(titleNode, parsed...) // TODO figure out how to do this cleanly
-		parsedJson, err := json.Marshal(allJSON)
+		parsedJSON, err := json.Marshal(allJSON)
 		if err != nil {
 			fmt.Fprintln(stderr, err)
 			return BadCreatedJSONErrorCode
 		}
 
 		// output i3bar JSON
-		fmt.Fprintf(stdout, "%s%s\n", prefix, parsedJson)
+		fmt.Fprintf(stdout, "%s%s\n", prefix, parsedJSON)
 	}
 
 	if scanner.Err() != nil {
 		return scannerError(stderr, scanner, BadEOFErrorCode)
-	} else {
-		// we hit EOF normally, everything is fine
-		return OK
 	}
+
+	// we hit EOF normally, everything is fine
+	return OK
 }

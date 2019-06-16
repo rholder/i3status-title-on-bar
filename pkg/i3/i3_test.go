@@ -17,45 +17,45 @@ func (testWindowAPI TestWindowAPI) BeginTitleChangeDetection(onChange func(), on
 	return nil
 }
 
-func TestJsonParsingLoopEmptyInput(t *testing.T) {
+func TestJSONParsingLoopEmptyInput(t *testing.T) {
 	lines := strings.NewReader("")
-	errorCode := RunJsonParsingLoop(lines, nil, nil, nil, "#00FF00", false, 0)
+	errorCode := RunJSONParsingLoop(lines, nil, nil, nil, "#00FF00", false, 0)
 	if errorCode != BadInputOpenErrorCode {
 		t.Fatal("Expected error from parsing loop")
 	}
 }
 
-func TestJsonParsingLoopNewlineInput(t *testing.T) {
+func TestJSONParsingLoopNewlineInput(t *testing.T) {
 	lines := strings.NewReader("\n")
 	stdout := os.Stdout
 	stderr := os.Stderr
-	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
+	errorCode := RunJSONParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
 	if errorCode != BadInputHeaderErrorCode {
 		t.Fatal("Expected error from parsing loop")
 	}
 }
 
-func TestJsonParsingLoopHappyBlankInput(t *testing.T) {
+func TestJSONParsingLoopHappyBlankInput(t *testing.T) {
 	lines := strings.NewReader("\n\n")
 	stdout := os.Stdout
 	stderr := os.Stderr
-	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
+	errorCode := RunJSONParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
 	if errorCode != OK {
 		t.Fatal("Expected no error from parsing loop")
 	}
 }
 
-func TestJsonParsingLoopBadJSONInput(t *testing.T) {
+func TestJSONParsingLoopBadJSONInput(t *testing.T) {
 	lines := strings.NewReader("\n\nPOTATO")
 	stdout := os.Stdout
 	stderr := os.Stderr
-	errorCode := RunJsonParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
+	errorCode := RunJSONParsingLoop(lines, stdout, stderr, nil, "#00FF00", false, 0)
 	if errorCode != BadInputJSONErrorCode {
 		t.Fatal("Expected error from parsing loop")
 	}
 }
 
-func TestJsonParsingLoopGoodJSONInput(t *testing.T) {
+func TestJSONParsingLoopGoodJSONInput(t *testing.T) {
 	input := "\n\n" +
 		`[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 067%"}]` +
 		"\n" +
@@ -64,13 +64,13 @@ func TestJsonParsingLoopGoodJSONInput(t *testing.T) {
 	stdout := os.Stdout
 	stderr := os.Stderr
 	windowAPI := TestWindowAPI{}
-	errorCode := RunJsonParsingLoop(lines, stdout, stderr, windowAPI, "#00FF00", false, 0)
+	errorCode := RunJSONParsingLoop(lines, stdout, stderr, windowAPI, "#00FF00", false, 0)
 	if errorCode != OK {
 		t.Fatal("Expected no error from parsing loop")
 	}
 }
 
-func TestJsonParsingLoopGoodJSONInputAppendEnd(t *testing.T) {
+func TestJSONParsingLoopGoodJSONInputAppendEnd(t *testing.T) {
 	input := "\n\n" +
 		`[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 067%"}]` +
 		"\n" +
@@ -79,7 +79,7 @@ func TestJsonParsingLoopGoodJSONInputAppendEnd(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	windowAPI := TestWindowAPI{}
-	errorCode := RunJsonParsingLoop(lines, &stdout, &stderr, windowAPI, "#00FF00", true, 0)
+	errorCode := RunJSONParsingLoop(lines, &stdout, &stderr, windowAPI, "#00FF00", true, 0)
 	if errorCode != OK {
 		t.Fatal("Expected no error from parsing loop")
 	}
@@ -89,7 +89,7 @@ func TestJsonParsingLoopGoodJSONInputAppendEnd(t *testing.T) {
 	}
 }
 
-func TestJsonParsingLoopGoodJSONInputFixedWidth(t *testing.T) {
+func TestJSONParsingLoopGoodJSONInputFixedWidth(t *testing.T) {
 	input := "\n\n" +
 		`[{"name":"wireless","instance":"wlp1s0","color":"#00FF00","markup":"none","full_text":"W: SOME_WIFI_SSID 067%"}]` +
 		"\n" +
@@ -98,7 +98,7 @@ func TestJsonParsingLoopGoodJSONInputFixedWidth(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	windowAPI := TestWindowAPI{}
-	errorCode := RunJsonParsingLoop(lines, &stdout, &stderr, windowAPI, "#00FF00", true, 10)
+	errorCode := RunJSONParsingLoop(lines, &stdout, &stderr, windowAPI, "#00FF00", true, 10)
 	if errorCode != OK {
 		t.Fatal("Expected no error from parsing loop")
 	}
