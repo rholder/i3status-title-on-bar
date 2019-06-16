@@ -33,8 +33,8 @@ func NewSampler(events chan interface{}, timeMs int) Sampler {
 // Close the current Sampler and shut down its Run loop.
 func (sampler Sampler) Close() {
 	// send stop signal, then one final event in case it's blocking
-	sampler.stop <- "stop"
-	sampler.events <- "end"
+	sampler.stop <- nil
+	sampler.events <- nil
 }
 
 // Run the Sampler. Messages appearing on the channel the Sampler is sampling
