@@ -16,7 +16,6 @@ import (
 // instead of creating a busy wait.
 type Sampler struct {
 	events chan interface{}
-	stop   chan interface{}
 	timeMs time.Duration
 }
 
@@ -25,16 +24,14 @@ type Sampler struct {
 func NewSampler(events chan interface{}, timeMs int) Sampler {
 	return Sampler{
 		events: events,
-		stop:   make(chan interface{}, 1),
 		timeMs: time.Millisecond * time.Duration(timeMs),
 	}
 }
 
-// Close the current Sampler and shut down its Run loop.
+// Close the current Sampler and shut down its Run loop. This will also close
+// the underlying channel being sampled.
 func (sampler Sampler) Close() {
-	// send stop signal, then one final event in case it's blocking
-	sampler.stop <- nil
-	sampler.events <- nil
+	close(sampler.events)
 }
 
 // Run the Sampler. Messages appearing on the channel the Sampler is sampling
@@ -44,11 +41,8 @@ func (sampler Sampler) Close() {
 // its configured channel and additionally that it will consume all messages
 // from the channel when they become available.
 func (sampler Sampler) Run(onSignal func(interface{})) {
-	// main loop
-	for poll(sampler.stop) == nil {
-		// block here on next event
-		value := <-sampler.events
-
+	// block here on next event
+	for value := range sampler.events {
 		// non-blocking function to drain the channel
 		for poll(sampler.events) != nil {
 			// drain these events that may have piled up
