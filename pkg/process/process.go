@@ -7,6 +7,8 @@ import (
 	"syscall"
 )
 
+// FindPidsByProcessName finds the list of process identifiers exactly matching
+// the given name.
 func FindPidsByProcessName(exactProcessName string) []int {
 	// Detect with pgrep -x
 	out, err := exec.Command("pgrep", "-x", exactProcessName).Output()
@@ -24,6 +26,8 @@ func FindPidsByProcessName(exactProcessName string) []int {
 	return pids
 }
 
+// SignalPidsWithUSR1 sends a USR1 signal to each process identifier in the
+// given list.
 func SignalPidsWithUSR1(pids []int) {
 	for _, pid := range pids {
 		syscall.Kill(pid, syscall.SIGUSR1)
