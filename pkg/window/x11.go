@@ -7,7 +7,7 @@ import (
 	"github.com/BurntSushi/xgb/xproto"
 )
 
-// State for an active X11 connection is managed here.
+// X11 creates and manages the currently active X11 connection.
 type X11 struct {
 	// This is the underlying X11 connection.
 	XConnection      *xgb.Conn
@@ -32,8 +32,8 @@ type X11 struct {
 	WindowName3Atom xproto.Atom
 }
 
-// Start up a new connection to an X11 display server, interning all necessary
-// atoms up front and setting up the root window.
+// NewX11 starts up a new connection to an X11 display server, interning all
+// necessary atoms up front and setting up the root window.
 func NewX11() (*X11, error) {
 	xConnection, err := xgb.NewConn()
 	if err != nil {
@@ -106,8 +106,8 @@ func (x11 X11) subscribeToWindowChangeEvents(window xproto.Window) {
 				xproto.EventMaskPropertyChange})
 }
 
-// Return the currently active window title or an empty string if one is not
-// available.
+// ActiveWindowTitle returns the currently active window title or an empty
+// string if one is not available.
 func (x11 X11) ActiveWindowTitle() string {
 	activeWindow, err := x11.activeWindow()
 	if err != nil {
@@ -123,6 +123,9 @@ func (x11 X11) ActiveWindowTitle() string {
 	return *windowTitle
 }
 
+// BeginTitleChangeDetection starts detecting changes in window titles. When a
+// change is detected, the onChange function is called and when a non-fatal
+// error occurs the onError function is called for that error.
 func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) error {
 	// Subscribe to events from the root window.
 	x11.subscribeToWindowChangeEvents(x11.RootWindow)
@@ -139,7 +142,7 @@ func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) e
 		// request.
 		ev, xerr := x11.XConnection.WaitForEvent()
 		if ev == nil && xerr == nil {
-			err := errors.New("Both event and error are nil. Exiting...")
+			err := errors.New("Both event and error are nil from XConnection, exiting X11 event loop")
 			onError(err)
 			return err
 		}
