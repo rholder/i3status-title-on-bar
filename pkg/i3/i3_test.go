@@ -13,7 +13,7 @@ func (testWindowAPI TestWindowAPI) ActiveWindowTitle() string {
 	return "foo"
 }
 
-func (testWindowAPI TestWindowAPI) BeginTitleChangeDetection(onChange func(), onError func(error)) error {
+func (testWindowAPI TestWindowAPI) DetectWindowTitleChanges(onChange func(), onError func(error)) error {
 	return nil
 }
 

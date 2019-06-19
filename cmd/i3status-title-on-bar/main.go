@@ -119,7 +119,7 @@ func main() {
 	}
 	titleChangeSampler := sampler.NewSampler(titleChangeEvents, titleChangeSampleMs)
 
-	go windowAPI.BeginTitleChangeDetection(func() {
+	go windowAPI.DetectWindowTitleChanges(func() {
 		titleChangeEvents <- "changed"
 	}, func(err error) {
 		fmt.Fprintln(stderr, err)

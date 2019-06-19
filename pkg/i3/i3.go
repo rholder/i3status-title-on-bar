@@ -48,7 +48,7 @@ func truncateAndPad(value string, fixedWidth int) string {
 // RunJSONParsingLoop parses the incoming JSON coming in from an
 // i3status-formatted source, adds the window title to the JSON as configured by
 // the given parameters, and outputs the modified JSON.
-func RunJSONParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.WindowAPI,
+func RunJSONParsingLoop(stdin io.Reader, stdout io.Writer, stderr io.Writer, windowAPI window.API,
 	color string, appendEnd bool, fixedWidth int) int {
 
 	// Read from input using a Scanner.
