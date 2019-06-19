@@ -102,8 +102,8 @@ func main() {
 		os.Exit(code)
 	}
 
-	titleChangeEvents := make(chan interface{}, titleChangeEventBufferSize)
-
+	// Grab every PID of i3status currently running. There should be only one
+	// but just in case let's use all of them.
 	currentStatusPids := process.FindPidsByProcessName("i3status")
 	if len(currentStatusPids) == 0 {
 		// no i3status means nothing to update on window title change
@@ -111,24 +111,34 @@ func main() {
 		os.Exit(MissingStatusProcessErrorCode)
 	}
 
+	// This window.API is for the current X11 display.
 	windowAPI, err := window.NewX11()
 	if err != nil {
 		// any display error on creation is fatal
 		fmt.Fprintln(stderr, err)
 		os.Exit(BadDisplayErrorCode)
 	}
-	titleChangeSampler := sampler.NewSampler(titleChangeEvents, titleChangeSampleMs)
 
+	// Changes are sampled and an update for i3status is only done every
+	// titleChangeSampleMs milliseconds instead of every time X11 decides to
+	// change a property. This minimizes signal sending to i3status which forces
+	// an update to everything it may be polling.
+	titleChangeEvents := make(chan interface{}, titleChangeEventBufferSize)
+	titleChangeSampler := sampler.NewSampler(titleChangeEvents, titleChangeSampleMs)
+	go titleChangeSampler.Run(func(value interface{}) {
+		process.SignalPidsWithUSR1(currentStatusPids)
+	})
+
+	// Whenever a change to a window title is detected, send it to this channel
+	// to be sampled.
 	go windowAPI.DetectWindowTitleChanges(func() {
 		titleChangeEvents <- "changed"
 	}, func(err error) {
 		fmt.Fprintln(stderr, err)
 	})
 
-	go titleChangeSampler.Run(func(value interface{}) {
-		process.SignalPidsWithUSR1(currentStatusPids)
-	})
-
+	// With everything set up and running, start processing the output from
+	// i3status and injecting the window titles.
 	exitCode := i3.RunJSONParsingLoop(stdin, stdout, stderr, windowAPI, config.color, config.appendEnd, config.fixedWidth)
 	os.Exit(exitCode)
 }
