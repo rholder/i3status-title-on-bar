@@ -13,8 +13,8 @@ import (
 	"github.com/rholder/i3status-title-on-bar/pkg/window"
 )
 
-// override this via: go build "-ldflags main.Version=x.x.x", defaults to 0.0.0-dev if unset
-var Version string = "0.0.0-dev"
+// Version override via: go build "-ldflags main.Version=x.x.x", defaults to 0.0.0-dev if unset
+var Version = "0.0.0-dev"
 
 const titleChangeSampleMs = 50
 const titleChangeEventBufferSize = 1000
@@ -40,6 +40,7 @@ Examples:
 Report bugs and find the latest updates at https://github.com/rholder/i3status-title-on-bar.
 `
 
+// Non-zero error codes signal different bad exit conditions. Zero is ok.
 const (
 	PrintErrorCode                int = 1
 	BadConfigErrorCode            int = 2
@@ -47,6 +48,7 @@ const (
 	BadDisplayErrorCode           int = 9
 )
 
+// Config stores a bit of configuration for the CLI.
 type Config struct {
 	color        string
 	appendEnd    bool
