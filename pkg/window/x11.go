@@ -10,10 +10,10 @@ import (
 // X11 creates and manages the currently active X11 connection.
 type X11 struct {
 	// This is the underlying X11 connection.
-	XConnection      *xgb.Conn
+	XConnection *xgb.Conn
 
 	// This is the root window.
-	RootWindow       xproto.Window
+	RootWindow xproto.Window
 
 	// The value of this atom should be the currently active window identifier.
 	// NOTE: Sometimes there is no currently active window.
