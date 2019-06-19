@@ -1,7 +1,7 @@
 BUILD_DIR=build
 
 NAME=i3status-title-on-bar
-VERSION=0.4.0
+VERSION=0.5.0-dev
 
 .PHONY: all build coverage clean fmt test tree
 
