@@ -123,10 +123,10 @@ func (x11 X11) ActiveWindowTitle() string {
 	return *windowTitle
 }
 
-// BeginTitleChangeDetection starts detecting changes in window titles. When a
-// change is detected, the onChange function is called and when a non-fatal
-// error occurs the onError function is called for that error.
-func (x11 X11) BeginTitleChangeDetection(onChange func(), onError func(error)) error {
+// DetectWindowTitleChanges blocks and starts detecting changes in window
+// titles. When a change is detected, the onChange function is called and when a
+// non-fatal error occurs the onError function is called for that error.
+func (x11 X11) DetectWindowTitleChanges(onChange func(), onError func(error)) error {
 	// Subscribe to events from the root window.
 	x11.subscribeToWindowChangeEvents(x11.RootWindow)
 
