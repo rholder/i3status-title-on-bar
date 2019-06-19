@@ -1,8 +1,8 @@
 package sampler
 
 import (
-	"time"
 	"testing"
+	"time"
 )
 
 func TestSampleLoopSingleEvent(t *testing.T) {
