@@ -47,7 +47,7 @@ Options:
   --version                Print the version and exit
 
 Examples:
-  i3status | i3status-title-on-bar --color #00EE00
+  i3status | i3status-title-on-bar --color '#00EE00'
   i3status | i3status-title-on-bar --append-right --fixed-width 64
   i3status-title-on-bar < i3status-output-example.json
 
