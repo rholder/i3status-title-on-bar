@@ -30,7 +30,8 @@ import (
 // Version override via: go build "-ldflags main.Version=x.x.x", defaults to 0.0.0-dev if unset
 var Version = "0.0.0-dev"
 
-const titleChangeSampleMs = 50
+// No title will change with a frequency higher than this value. See https://www.nngroup.com/articles/response-times-3-important-limits/
+const titleChangeSampleMs = 100
 const titleChangeEventBufferSize = 1000
 const defaultColor = "#00FF00"
 const helpText = `Usage: i3status-title-on-bar [OPTIONS...]
