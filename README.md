@@ -69,15 +69,17 @@ i3status wakes up and outputs JSON ---> i3status-title-on-bar gets active window
 i3status sleeps <------------------------------------ i3wm displays window title
 ```
 
-With the addition of [i3/i3status#long_commit_hash](), we can force `i3status` to wake up immediately by sending a `USR1` signal to the running `i3status` process id. Thus, we add another subsystem to `i3status-title-on-bar` to listen for window title changes and signal `i3status` when an update occurs. Here is another crude diagram:
+With the addition of [this commit](https://github.com/i3/i3status/commit/0a608d4af67fe59390f2e8931f61b664f48660db), we can force `i3status` to wake up immediately by sending a `USR1` signal to the running `i3status` process id. Thus, we add another subsystem to `i3status-title-on-bar` to listen for window title changes and signal `i3status` when an update occurs. Here is another crude diagram:
 ```
-i3status-title-on-bar detects title change ----> i3status-title-on-bar sends i3status USR1 wake up
-                      ^                                                  |
-                      |                                                  |
-i3status-title-on-bar waits for next change <----------------------------
+i3status-title-on-bar detects title change ----> i3status-title-on-bar sends all i3status processes USR1 wake up
+                      ^                                                        |
+                      |                                                        |
+i3status-title-on-bar waits for next change <----------------------------------
 ```
 
 With these two systems in place, we can reliably update the window title when it changes and display it in the i3 bar.
+
+However, what happens when some process decides it wants to update its own window title constantly all the time triggering constant and very frequent updates to `i3status`? I've attempted to mitigate this behavior by sampling window title changes as they are detected instead of passing them through directly. An update signal to `i3status` is only sent at a max rate of every 100 milliseconds instead of every time a window title property change occurs (that number comes from [here](https://www.nngroup.com/articles/response-times-3-important-limits/)). This minimizes the `USR1` signal sending to `i3status` which forces an update to everything it may be polling.
 
 ## Development
 Set up a go 1.12 development environment. There are many "valid" or "right" or "idiomatic" ways of doing this. Find the one that works for you that lets you compile and run go code.
