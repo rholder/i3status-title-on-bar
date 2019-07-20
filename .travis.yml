@@ -4,4 +4,6 @@ go:
 - "1.12.6"
 - "1.12.x"
 
-script: make test
+script:
+- make
+- make test
