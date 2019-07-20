@@ -13,7 +13,7 @@ Use `i3status-title-on-bar` to inject the active window title into the output of
 * Customize the color, width, and position of the window title information to display
 
 ## Installation
-A release binary is available for Linux. If there is interest in binaries for other platforms, open an issue about it.
+A release binary is available for `linux/amd64`. Open an issue if there is interest in binaries for other platforms.
 
 ### Linux
 Drop the binary into your path, such as `/usr/local/bin`:
