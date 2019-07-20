@@ -17,7 +17,7 @@ A release binary is available for `linux/amd64`. Open an issue if there is inter
 ### Linux
 Drop the binary into your path, such as `/usr/local/bin`:
 ```bash
-sudo curl -o /usr/local/bin/i3status-title-on-bar -L "https://github.com/rholder/i3status-title-on-bar/releases/download/v0.5.0/i3status-title-on-bar" && \
+sudo curl -o /usr/local/bin/i3status-title-on-bar -L "https://github.com/rholder/i3status-title-on-bar/releases/download/v0.5.1/i3status-title-on-bar" && \
 sudo chmod +x /usr/local/bin/i3status-title-on-bar
 ```
 
@@ -32,7 +32,7 @@ bar {
 This bit of configuration is where we'll add `i3status-title-on-bar`. Here is how to pipe the i3 bar formatted output from `i3status` into `i3status-title-on-bar` with a custom color:
 ```
 bar {
-        status_command i3status | i3status-title-on-bar --color '#00EE00'
+        status_command i3status | i3status-title-on-bar --color '#02FFBF'
 }
 ```
 
