@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/rholder/i3status-title-on-bar.svg?branch=master)](https://travis-ci.org/rholder/i3status-title-on-bar)
 [![License](https://img.shields.io/badge/license-apache%202.0-brightgreen.svg)](https://github.com/rholder/i3status-title-on-bar/blob/master/LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/rholder/i3status-title-on-bar)](https://goreportcard.com/report/rholder/i3status-title-on-bar) 
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/rholder/i3status-title-on-bar)](https://goreportcard.com/report/github.com/rholder/i3status-title-on-bar)
 # i3status-title-on-bar
 
 Use `i3status-title-on-bar` to inject the active window title into the output of `i3status` as soon as it is updated. 
