@@ -53,7 +53,7 @@ Options:
 
 Examples:
   i3status | i3status-title-on-bar --color '#00EE00'
-  i3status | i3status-title-on-bar --append-right --fixed-width 64
+  i3status | i3status-title-on-bar --append-end --fixed-width 64
   i3status-title-on-bar < i3status-output-example.json
 
 Report bugs and find the latest updates at https://github.com/rholder/i3status-title-on-bar.
