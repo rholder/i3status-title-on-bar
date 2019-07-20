@@ -63,7 +63,7 @@ Report bugs and find the latest updates at https://github.com/rholder/i3status-t
 ## Background
 Because `i3status` relies on a user configurable polling mechanism (intentionally, to reduce unnecessary system calls) when generating content for the i3 bar, it needs to be notified that an update should occur sooner than the next scheduled wakeup. Without notification, adding the window title to the produced JSON from `i3status` has a variable delay in displaying that depends on the polling interval. This is most noticeable when switching tabs in a browser or text editor where the window title changes based on the active tab but the update to the window title doesn't happen immediately and instead appears to lag behind until `i3status` finally wakes up. Here is a crude diagram of how `i3status-title-on-bar` is affected by `i3status`'s sleep:
 ```
-i3status wakes up and outputs JSON ---> i3status-title-on-bar gets active window title, adds to output JSON
+i3status wakes up, outputs JSON ---> i3status-title-on-bar gets active window title, adds to JSON
        ^                                                           |
        |                                                           v
 i3status sleeps <------------------------------------ i3wm displays window title
@@ -71,7 +71,7 @@ i3status sleeps <------------------------------------ i3wm displays window title
 
 With the addition of [this commit](https://github.com/i3/i3status/commit/0a608d4af67fe59390f2e8931f61b664f48660db), we can force `i3status` to wake up immediately by sending a `USR1` signal to the running `i3status` process id. Thus, we add another subsystem to `i3status-title-on-bar` to listen for window title changes and signal `i3status` when an update occurs. Here is another crude diagram:
 ```
-i3status-title-on-bar detects title change ----> i3status-title-on-bar sends all i3status processes USR1 wake up
+i3status-title-on-bar detects title change ----> i3status-title-on-bar signals i3status with USR1
                       ^                                                        |
                       |                                                        |
 i3status-title-on-bar waits for next change <----------------------------------
