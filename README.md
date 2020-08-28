@@ -12,12 +12,12 @@ Use `i3status-title-on-bar` to inject the active window title into the output of
 * Customize the color, width, and position of the window title information to display
 
 ## Installation
-A release binary is available for `linux/amd64`. Open an issue if there is interest in binaries for other platforms.
+Release binaries are available for `linux/amd64`, `linux/arm` (v5), and `linux/arm64`. Open an issue if there is interest in binaries for other platforms.
 
 ### Linux
 Drop the binary into your path, such as `/usr/local/bin`:
 ```bash
-sudo curl -o /usr/local/bin/i3status-title-on-bar -L "https://github.com/rholder/i3status-title-on-bar/releases/download/v0.5.1/i3status-title-on-bar" && \
+sudo curl -o /usr/local/bin/i3status-title-on-bar -L "https://github.com/rholder/i3status-title-on-bar/releases/download/v0.6.0/i3status-title-on-bar-linux_amd64" && \
 sudo chmod +x /usr/local/bin/i3status-title-on-bar
 ```
 
@@ -81,7 +81,7 @@ With these two systems in place, we can reliably update the window title when it
 However, what happens when some process decides it wants to update its own window title constantly all the time triggering constant and very frequent updates to `i3status`? I've attempted to mitigate this behavior by sampling window title changes as they are detected instead of passing them through directly. An update signal to `i3status` is only sent at a max rate of every 100 milliseconds instead of every time a window title property change occurs (that number comes from [here](https://www.nngroup.com/articles/response-times-3-important-limits/)). This minimizes the `USR1` signal sending to `i3status` which forces an update to everything it may be polling.
 
 ## Development
-Set up a go 1.12 development environment. There are many "valid" or "right" or "idiomatic" ways of doing this. Find the one that works for you that lets you compile and run go code.
+Set up a go 1.15 development environment. There are many "valid" or "right" or "idiomatic" ways of doing this. Find the one that works for you that lets you compile and run go code.
 
 Here's what I do to maintain a single isolated project in a single isolated workspace after cloning this git repository:
 ```
@@ -91,13 +91,17 @@ make
 ```
 An example of the contents of this project's `.source_me` can be found in [.source_me_example](https://github.com/rholder/i3status-title-on-bar/blob/master/.source_me_example). Modify it to suit your needs if you want or use your current go development setup.
 
-From here, run any of the following available `make` targets:
-* `make` defaults to cleaning and building the binary
-* `make clean` - Delete the built binary, if it exists
-* `make build` - Build the `i3status-title-on-bar` binary
-* `make test` - Run all the available tests
-* `make coverage` - Run tests and build the coverage report
-* `make fmt` - Run `gofmt`
+The `Makefile` contains a `help` target that displays the following:
+```
+Usage:
+
+  clean      remove the build directory
+  build      assemble the project and place a binary in build/ for this OS
+  fmt        run gofmt for the project
+  test       run the unit tests
+  coverage   run the unit tests with test coverage output to build/coverage.html
+  help       prints this help message
+```
 
 ## License
 `i3status-title-on-bar` is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
