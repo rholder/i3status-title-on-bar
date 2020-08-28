@@ -17,7 +17,7 @@ Release binaries are available for `linux/amd64`, `linux/arm` (v5), and `linux/a
 ### Linux
 Drop the binary into your path, such as `/usr/local/bin`:
 ```bash
-sudo curl -o /usr/local/bin/i3status-title-on-bar -L "https://github.com/rholder/i3status-title-on-bar/releases/download/v0.6.0/i3status-title-on-bar-linux_amd64" && \
+sudo curl -o /usr/local/bin/i3status-title-on-bar -L "https://github.com/rholder/i3status-title-on-bar/releases/download/v0.6.1/i3status-title-on-bar-linux_amd64" && \
 sudo chmod +x /usr/local/bin/i3status-title-on-bar
 ```
 
