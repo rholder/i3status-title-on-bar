@@ -31,11 +31,9 @@ PROJECT_NAME=${1:-${__BASE_DIR__}}
 
 # just a few common OS_ARCH combinations, not everything
 OS_ARCHS=(
-    darwin/amd64
     linux/amd64
     linux/arm
     linux/arm64
-    windows/amd64
 )
 
 function log() {
