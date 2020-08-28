@@ -53,7 +53,13 @@ function build_for() {
     if [[ "${os}" == "windows" ]]; then
         bin_name=${bin_name}.exe
     fi
-    GOOS=${os} GOARCH=${arch} make build BIN_NAME=${bin_name}
+
+    # always use ARM v5
+    if [[ "${arch}" == "arm" ]]; then
+        GOOS=${os} GOARCH=${arch} GOARM=5 make build BIN_NAME=${bin_name}
+    else
+        GOOS=${os} GOARCH=${arch} make build BIN_NAME=${bin_name}
+    fi
 }
 
 function build_checksums() {
