@@ -1,9 +1,9 @@
 dist: bionic
+
 language: go
 
 go:
-- "1.12.6"
-- "1.12.x"
+- 1.15
 
 script:
-- env GO111MODULE=on make test
+- make test
