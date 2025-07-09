@@ -52,8 +52,7 @@ Examples:
   i3status | i3status-title-on-bar --append-end --fixed-width 64
   i3status-title-on-bar < i3status-output-example.json
 
-Report bugs and find the latest updates at https://github.com/rholder/i3status-title-on-bar.
-`
+Report bugs and find the latest updates at https://github.com/rholder/i3status-title-on-bar.`
 
 // Non-zero error codes signal different bad exit conditions. Zero is ok.
 const (
