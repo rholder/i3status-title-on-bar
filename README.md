@@ -1,5 +1,4 @@
 # i3status-title-on-bar
-[![Build Status](https://travis-ci.org/rholder/i3status-title-on-bar.svg?branch=master)](https://travis-ci.org/rholder/i3status-title-on-bar)
 [![Latest Version](https://img.shields.io/github/v/release/rholder/i3status-title-on-bar?color=bright-green&sort=semver)](https://github.com/rholder/i3status-title-on-bar/releases/latest)
 [![License](https://img.shields.io/badge/license-apache%202.0-brightgreen.svg)](https://github.com/rholder/i3status-title-on-bar/blob/master/LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rholder/i3status-title-on-bar)](https://goreportcard.com/report/github.com/rholder/i3status-title-on-bar)
@@ -7,7 +6,7 @@
 Use `i3status-title-on-bar` to inject the active window title into the output of `i3status` as soon as it is updated. 
 
 ## Features
-* Supports`i3bar` JSON output format from `i3status`
+* Supports `i3bar` JSON output format from `i3status`
 * Adds active window title information into normal `i3status` output
 * Detects when the active window title information changes and signals the `i3status` process to update immediately
 * Customize the color, width, and position of the window title information to display
