@@ -1,5 +1,5 @@
 # Explicitly set the go SDK we want to use and add its tools to the PATH.
-export GOROOT=$HOME/go-sdk/go-1.15
+export GOROOT=$HOME/go-sdk/go-1.24
 export PATH=$PATH:$GOROOT/bin
 
 # Set GOPATH to a temporary location based on the name of the current working

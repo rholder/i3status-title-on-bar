@@ -81,7 +81,7 @@ With these two systems in place, we can reliably update the window title when it
 However, what happens when some process decides it wants to update its own window title constantly all the time triggering constant and very frequent updates to `i3status`? I've attempted to mitigate this behavior by sampling window title changes as they are detected instead of passing them through directly. An update signal to `i3status` is only sent at a max rate of every 100 milliseconds instead of every time a window title property change occurs (that number comes from [here](https://www.nngroup.com/articles/response-times-3-important-limits/)). This minimizes the `USR1` signal sending to `i3status` which forces an update to everything it may be polling.
 
 ## Development
-Set up a go 1.15 development environment. There are many "valid" or "right" or "idiomatic" ways of doing this. Find the one that works for you that lets you compile and run go code.
+Set up a go 1.24 development environment. There are many "valid" or "right" or "idiomatic" ways of doing this. Find the one that works for you that lets you compile and run go code.
 
 Here's what I do to maintain a single isolated project in a single isolated workspace after cloning this git repository:
 ```
