@@ -21,6 +21,8 @@ import (
 	"github.com/BurntSushi/xgb/xproto"
 )
 
+var ErrInvalidReply = errors.New("X11 reply value was not exactly 4 bytes")
+
 // X11 creates and manages the currently active X11 connection.
 type X11 struct {
 	// This is the underlying X11 connection.
@@ -93,6 +95,10 @@ func (x11 X11) activeWindow() (*xproto.Window, error) {
 		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 	if err != nil {
 		return nil, err
+	}
+	// Value can be empty (like right after X11 starts), handle that and other cases
+	if len(reply.Value) != 4 {
+		return nil, ErrInvalidReply
 	}
 	window := xproto.Window(xgb.Get32(reply.Value))
 	return &window, nil
