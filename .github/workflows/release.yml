@@ -9,17 +9,17 @@ name: Automatic Release Workflow
 jobs:
   build:
     name: Upload Release Assets
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
 
     - name: Set up Go
-      uses: actions/setup-go@v2.0.3
+      uses: actions/setup-go@v5.5.0
       with:
         go-version: 1.24
       id: go_setup
 
     - name: Check out Code
-      uses: actions/checkout@v2.1.1
+      uses: actions/checkout@v4.2.2
 
     - name: Run Tests
       run: |
@@ -29,57 +29,16 @@ jobs:
       run: |
         ./release.sh i3status-title-on-bar
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Release Assets
+      id: upload-release-assets
+      uses: softprops/action-gh-release@v2.3.2
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        name: Release ${{ github.ref }}
         draft: true
         prerelease: true
-
-    - name: Upload Release Asset - i3status-title-on-bar-linux_amd64
-      id: upload-release-asset-i3status-title-on-bar-linux_amd64
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/i3status-title-on-bar-linux_amd64
-        asset_name: i3status-title-on-bar-linux_amd64
-        asset_content_type: application/octet-stream
-
-    - name: Upload Release Asset - i3status-title-on-bar-linux_arm
-      id: upload-release-asset-i3status-title-on-bar-linux_arm
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/i3status-title-on-bar-linux_arm
-        asset_name: i3status-title-on-bar-linux_arm
-        asset_content_type: application/octet-stream
-
-    - name: Upload Release Asset - i3status-title-on-bar-linux_arm64
-      id: upload-release-asset-i3status-title-on-bar-linux_arm64
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/i3status-title-on-bar-linux_arm64
-        asset_name: i3status-title-on-bar-linux_arm64
-        asset_content_type: application/octet-stream
-
-    - name: Upload Release Asset - sha256sums
-      id: upload-release-asset-sha256sums
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/sha256sums
-        asset_name: sha256sums
-        asset_content_type: text/plain
+        fail_on_unmatched_files: true
+        files: |
+          ./build/i3status-title-on-bar-linux_amd64
+          ./build/i3status-title-on-bar-linux_arm
+          ./build/i3status-title-on-bar-linux_arm64
+          ./build/sha256sums
